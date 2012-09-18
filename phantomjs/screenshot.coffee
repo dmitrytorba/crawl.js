@@ -41,26 +41,9 @@ renderPage = (url, filename, callback) ->
   loadPage url, (page) ->
     return callback(null) unless page
     setTimeout ->
-      page.evaluate -> document.documentElement.style.backgroundColor = '#fff'
-      page.render(filename)
+      fs.write filename, page.content
       callback(filename)
     , 1000
-
-###
- Resize image size
-###
-resizeImageFile = (srcFile, dstFile, imageSize, callback) ->
-  console.log "resizing #{srcFile} to #{dstFile}..."
-  page = webpage.create()
-  page.viewportSize = imageSize
-  page.clipRect = { left: 0, right: 0, width: imageSize.width, height: imageSize.height }
-  html = "<html><body style=\"margin:0;padding:0\">"
-  html += "<img src=\"file://#{srcFile}\" width=\"#{imageSize.width}\" height=\"#{imageSize.height}\">"
-  html += "</body></html>"
-  page.content = html
-  page.onLoadFinished = ->
-    page.render(dstFile)
-    callback(dstFile)
 
 ###
  Upload file using form
@@ -130,17 +113,14 @@ connect (conn) ->
   return console.log("connection failure.") unless conn
   conn.onRenderRequest = (request) ->
     filename = Math.random().toString(36).substring(2)
-    captureFile = "/tmp/#{filename}.jpg"
-    imageFile = "/tmp/#{filename}_#{imageSize.width}x#{imageSize.height}.jpg"
-    renderPage request.url, captureFile, (captureFile) ->
-      console.log "captureFile #{captureFile}"
-      resizeImageFile captureFile, imageFile, imageSize, (imageFile) ->
-        uploadFile imageFile, request.form, (imageUrl) ->
-          if imageUrl
-            conn.notify("complete", request.url, imageUrl)
-          else
-            conn.notify("failure",  request.url)
-          fs.remove(captureFile)
-          fs.remove(imageFile)
+    file = "/tmp/#{filename}.html"
+    renderPage request.url, file, (file) ->
+      console.log "file #{file}"
+      #uploadFile file, request.form, (imageUrl) ->
+      #  if imageUrl
+      #    conn.notify("complete", request.url, imageUrl)
+      #  else
+      #    conn.notify("failure",  request.url)
+        #fs.remove(file)
 
 
