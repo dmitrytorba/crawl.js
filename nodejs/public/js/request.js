@@ -8,8 +8,12 @@ function init() {
     socket.emit("render", url);
     return false;
   });
-  socket.on("image", function(imageUrl) {
-    $('<img>').attr('src', imageUrl).prependTo($('#images'));
+  socket.on("image", function(url) {
+    console.log('URL: ' + url);
+    $('<a>').attr({
+            'href': url,
+            'target': '_blank'
+        }).html(url).prependTo($('#images'));
     if ($('img').size() > 10) {
       $('img:last-child').remove();
     }

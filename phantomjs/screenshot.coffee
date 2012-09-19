@@ -67,7 +67,7 @@ uploadFile = (file, form, callback) ->
       console.log "uploading done."
       loc = page.content.match(/<Location>(http[^<]+)<\/Location>/)
       if loc
-        console.log "image location: #{loc[1]}"
+        console.log "file location: #{loc[1]}"
         callback loc[1]
       else
         callback null
@@ -116,11 +116,11 @@ connect (conn) ->
     file = "/tmp/#{filename}.html"
     renderPage request.url, file, (file) ->
       console.log "file #{file}"
-      #uploadFile file, request.form, (imageUrl) ->
-      #  if imageUrl
-      #    conn.notify("complete", request.url, imageUrl)
-      #  else
-      #    conn.notify("failure",  request.url)
-        #fs.remove(file)
+      uploadFile file, request.form, (snapshotUrl) ->
+        if snapshotUrl
+          conn.notify("complete", request.url, snapshotUrl)
+        else
+          conn.notify("failure",  request.url)
+        fs.remove(file)
 
 

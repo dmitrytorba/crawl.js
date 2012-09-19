@@ -6,7 +6,7 @@ config =
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
   upload:
     bucketName: process.env.UPLOAD_BUCKET_NAME
-    path: 'files/'
+    path: 'seo/'
     expiration: 5
 
 toISO8601 = (d) ->
@@ -32,7 +32,9 @@ toISO8601 = (d) ->
 
 module.exports =
   createForm: (filename) ->
-    filePath = config.upload.path + filename + '.jpg'
+    console.log  "http://#{config.upload.bucketName}.s3.amazonaws.com/"
+    console.log  "id: #{config.aws.accessKeyId}" + "key: #{config.aws.secretAccessKey}"
+    filePath = config.upload.path + filename + '.html'
     policy =
       expiration : toISO8601(new Date(Date.now() + 60000 * config.upload.expiration))
       conditions : [
@@ -40,7 +42,7 @@ module.exports =
         [ "starts-with", "$key", config.upload.path ]
         { acl: "public-read" }
         { success_action_status : "201" }
-        [ "starts-with", "$Content-Type", "image/" ]
+        [ "starts-with", "$Content-Type", "text/" ]
         [ "content-length-range", 0, 524288 ]
       ]
     policyB64 = new Buffer(JSON.stringify(policy)).toString('base64')
@@ -54,7 +56,7 @@ module.exports =
         key: filePath
         acl: "public-read"
         success_action_status: "201"
-        "Content-Type": "image/jpeg"
+        "Content-Type": "text/html"
         policy: policyB64
         signature: signature
     }

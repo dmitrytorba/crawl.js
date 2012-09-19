@@ -7,6 +7,7 @@ express  = require "express"
 crypto   = require "crypto"
 socketio = require "socket.io"
 http     = require "http"
+s3upload   = require "./s3upload"
 WorkerQueue = require "./queue"
 
 app = module.exports = express()
@@ -26,7 +27,7 @@ app.configure ->
 app.configure "development", ->
   app.use express.errorHandler(
     dumpExceptions: true
-    showStack: true 
+    showStack: true
   )
 
 app.configure "production", ->
@@ -52,8 +53,8 @@ Socket IO Channels
 io = socketio.listen(server)
 
 io.configure ->
-  io.set "transports", ["xhr-polling"] 
-  io.set "polling duration", 10 
+  io.set "transports", ["xhr-polling"]
+  io.set "polling duration", 10
 
 channels =
   request:
@@ -66,6 +67,7 @@ channels =
           queue.enqueue
             url: url
             hash: hash
+            form: s3upload.createForm(hash)
         socket.on "disconnect", ->
           console.log "<requester> disconnect"
 
@@ -77,8 +79,8 @@ channels =
         renderer.on "dispatch", (req) -> socket.emit "render", req
         queue.wait(renderer)
         socket.on "complete", (response) ->
-          console.log "<renderer> notify #{response.imageUrl}"
-          channels.request.emit "image", response.html
+          console.log "<renderer> notify #{response.snapshotUrl}"
+          channels.request.emit "image", response.snapshotUrl
         socket.on "fail", ->
           queue.wait(renderer)
         socket.on "disconnect", ->

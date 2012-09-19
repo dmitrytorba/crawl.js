@@ -6,10 +6,10 @@ function init() {
   });
 }
 
-function notifyComplete(pageUrl, imageUrl) {
+function notifyComplete(pageUrl, snapshotUrl) {
   socket.emit("complete", {
     url: pageUrl,
-    imageUrl: imageUrl
+    snapshotUrl: snapshotUrl
   });
 }
 
