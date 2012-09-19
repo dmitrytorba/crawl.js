@@ -10,6 +10,7 @@ function init() {
   });
   socket.on("image", function(url) {
     console.log('URL: ' + url);
+    $('<br/>').prependTo($('#images'));
     $('<a>').attr({
             'href': url,
             'target': '_blank'

@@ -67,7 +67,7 @@ channels =
           queue.enqueue
             url: url
             hash: hash
-            form: s3upload.createForm(hash)
+            form: s3upload.createForm(encodeURIComponent(url))
         socket.on "disconnect", ->
           console.log "<requester> disconnect"
 

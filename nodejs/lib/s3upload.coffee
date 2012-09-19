@@ -32,8 +32,6 @@ toISO8601 = (d) ->
 
 module.exports =
   createForm: (filename) ->
-    console.log  "http://#{config.upload.bucketName}.s3.amazonaws.com/"
-    console.log  "id: #{config.aws.accessKeyId}" + "key: #{config.aws.secretAccessKey}"
     filePath = config.upload.path + filename + '.html'
     policy =
       expiration : toISO8601(new Date(Date.now() + 60000 * config.upload.expiration))
