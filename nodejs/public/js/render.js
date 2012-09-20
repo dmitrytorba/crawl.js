@@ -6,6 +6,12 @@ function init() {
   });
 }
 
+function notifyFound(url) {
+  socket.emit("found", {
+    url: url 
+  });
+}
+
 function notifyComplete(pageUrl, snapshotUrl) {
   socket.emit("complete", {
     url: pageUrl,

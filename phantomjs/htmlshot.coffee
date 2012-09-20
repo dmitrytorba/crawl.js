@@ -2,11 +2,17 @@ fs      = require('fs')
 sys     = require('system')
 webpage = require('webpage')
 
-if sys.args.length < 2
-  console.log "Usage: phantomjs screenshot.coffee <push-server-url> [screen-width] [screen-height] [image-width] [image-height] [wait]"
+if sys.args.length < 1
+  console.log "Usage: phantomjs htmlshot.coffee <push-server-url>"
   return
 
 pushServerUrl = sys.args[1]
+screenSize =
+  width : sys.args[2] || 1024
+  height : sys.args[3] || 768
+imageSize =
+  width : sys.args[4] || 400
+  height : sys.args[5] || 300
 
 renderingWait = Number(sys.args[6] || 1000)
 
@@ -15,12 +21,15 @@ renderingWait = Number(sys.args[6] || 1000)
 ###
 loadPage = (url, callback) ->
   page = webpage.create()
+  page.viewportSize = screenSize
+  page.clipRect = { top: 0, left: 0, width: screenSize.width, height: screenSize.height }
   page.onAlert = (msg) ->
     console.log msg
   page.onError = (msg, trace) ->
     console.log msg
     trace.forEach (item) -> console.log "  ", item.file, ":", item.line
   page.open url, (status) ->
+    console.log("status: #{status}")
     callback (if status is "success" then page else null)
   page
 
@@ -28,14 +37,29 @@ loadPage = (url, callback) ->
 ###
  Render and upload page image
 ###
-renderPage = (url, filename, callback) ->
-  console.log "rendering #{url} to #{filename} ..."
+renderPage = (url, callback) ->
+  console.log "rendering #{url} ..."
   loadPage url, (page) ->
     return callback(null) unless page
     setTimeout ->
-      fs.write filename, page.content
-      callback(filename)
+      callback(page.content)
     , 1000
+
+###
+ Resize image size
+###
+resizeImageFile = (srcFile, dstFile, imageSize, callback) ->
+  console.log "resizing #{srcFile} to #{dstFile}..."
+  page = webpage.create()
+  page.viewportSize = imageSize
+  page.clipRect = { left: 0, right: 0, width: imageSize.width, height: imageSize.height }
+  html = "<html><body style=\"margin:0;padding:0\">"
+  html += "<img src=\"file://#{srcFile}\" width=\"#{imageSize.width}\" height=\"#{imageSize.height}\">"
+  html += "</body></html>"
+  page.content = html
+  page.onLoadFinished = ->
+    page.render(dstFile)
+    callback(dstFile)
 
 ###
  Upload file using form
@@ -59,34 +83,11 @@ uploadFile = (file, form, callback) ->
       console.log "uploading done."
       loc = page.content.match(/<Location>(http[^<]+)<\/Location>/)
       if loc
-        console.log "file location: #{loc[1]}"
+        console.log "image location: #{loc[1]}"
         callback loc[1]
       else
         callback null
       page.release()
-
-
-
-###
- Crawl a site, collecting a map of href's
-###
-crawlPage = (url, found, finish) ->
-  loadPage url, (page) ->
-    console.log "analyzing #{url}"
-    foundURLs = page.content.match(/href=['\"]([^'\"]*)['\"]/g)
-    if foundURLs
-      console.log "extracted #{foundURLs.length} URL"
-      for foundURL in foundURLs
-        # remove the href= 
-        foundURL = foundURL[6..-2]
-        # console.log "#{foundURL}"
-        if((foundURL.indexOf '#!') != -1)
-          found foundURL
-          # console.log "#{foundURL}"
-    else
-      console.log "found no URLs"
-    finish()
-
 
 ###
  Connecting to socket.IO push server
@@ -113,14 +114,11 @@ class Connection
 
   onRenderRequest: null
 
-  notify: (message) ->
-    if message is "found"
-      @page.evaluate("function(){ notifyFound('#{arguments[1]}'); }")
-    else if message is "complete"
-      args = Array.prototype.slice.call(arguments, 1)
-      @page.evaluate("function(){ notifyComplete('#{args.join("','")}'); }")
+  notify: (message, requestUrl, html) ->
+    if message is "complete"
+      @page.evaluate("function(){ var html='#{escape(html)}'; notifyComplete('#{requestUrl}', html); }")
     else
-      @page.evaluate("function(){ notifyFailure('#{args.join("','")}'); }")
+      @page.evaluate("function(){ notifyFailure('#{requestUrl}'); }")
 
 
 ###
@@ -129,27 +127,10 @@ class Connection
 connect (conn) ->
   return console.log("connection failure.") unless conn
   conn.onRenderRequest = (request) ->
-    if(request.crawl)
-        console.log 'crawlin'
-        crawlPage(request.url,
-          (url) -> (
-            console.log "needs snapshot: #{url}"
-            conn.notify("found", url)
-          ),
-          () -> (
-            conn.notify("complete")
-          )
-        )
-    else
-        filename = Math.random().toString(36).substring(2)
-        file = "/tmp/#{filename}.html"
-        renderPage request.url, file, (file) ->
-          console.log "file #{file}"
-          uploadFile file, request.form, (snapshotUrl) ->
-            if snapshotUrl
-              conn.notify("complete", request.url, snapshotUrl)
-            else
-              conn.notify("failure",  request.url)
-            fs.remove(file)
-
+    renderPage request.url, (html) ->
+      if html 
+        console.log("calling phantom")
+        conn.notify("complete", request.url, html)
+      else
+        conn.notify("failure",  request.url)
 

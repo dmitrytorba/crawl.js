@@ -68,6 +68,11 @@ channels =
             url: url
             hash: hash
             form: s3upload.createForm(encodeURIComponent(url))
+        socket.on "crawl", (url) ->
+          console.log "<requester> crawl"
+          queue.enqueue
+            url: url
+            crawl: true
         socket.on "disconnect", ->
           console.log "<requester> disconnect"
 
@@ -81,6 +86,14 @@ channels =
         socket.on "complete", (response) ->
           console.log "<renderer> notify #{response.snapshotUrl}"
           channels.request.emit "image", response.snapshotUrl
+          queue.wait(renderer)
+        socket.on "found", (response) ->
+          console.log "<renderer> found #{response.url}"
+          hash = sha1(response.url)
+          queue.enqueue
+            url: response.url
+            hash: hash
+            form: s3upload.createForm(encodeURIComponent(response.url))
         socket.on "fail", ->
           queue.wait(renderer)
         socket.on "disconnect", ->
