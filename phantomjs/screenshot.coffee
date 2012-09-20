@@ -66,23 +66,40 @@ uploadFile = (file, form, callback) ->
       page.release()
 
 
+parseURL = (url, location) ->
+  if url[0] is '#'
+    if (location.href.indexOf '#') is -1
+      location.href + url
+    else
+      location.href.replace /#.*/, url
+  else
+    #TODO: other cases
+    url
+
+getLocation = (page) ->
+    location =
+      href: (page.evaluate ->
+        window.location.href),
+      hash: (page.evaluate ->
+        window.location.hash)
 
 ###
- Crawl a site, collecting a map of href's
+ Crawl a site
 ###
 crawlPage = (url, found, finish) ->
   loadPage url, (page) ->
+    location = getLocation page
     console.log "analyzing #{url}"
-    foundURLs = page.content.match(/href=['\"]([^'\"]*)['\"]/g)
+    foundURLs = page.content.match /href=['\"]([^'\"]*)['\"]/g
     if foundURLs
       console.log "extracted #{foundURLs.length} URL"
       for foundURL in foundURLs
         # remove the href= 
         foundURL = foundURL[6..-2]
-        # console.log "#{foundURL}"
-        if((foundURL.indexOf '#!') != -1)
+        if (foundURL.indexOf '#!') isnt -1
+          foundURL = parseURL foundURL, location
           found foundURL
-          # console.log "#{foundURL}"
+          #console.log "#{foundURL}"
     else
       console.log "found no URLs"
     finish()
