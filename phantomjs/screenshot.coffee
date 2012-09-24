@@ -83,26 +83,43 @@ getLocation = (page) ->
       hash: (page.evaluate ->
         window.location.hash)
 
+extractUrlsFromPage = (page) ->
+  result = []
+  hrefs = page.content.match /href=['\"]([^'\"]*)['\"]/g
+  for href in hrefs
+    # remove the href= 
+    url = href[6..-2]
+    # check if empty
+    if url
+      # ignore css
+      result.push url
+  result
+
+ 
+
 ###
  Crawl a site
 ###
 crawlPage = (url, found, finish) ->
   loadPage url, (page) ->
-    location = getLocation page
-    console.log "analyzing #{url}"
-    foundURLs = page.content.match /href=['\"]([^'\"]*)['\"]/g
-    if foundURLs
-      console.log "extracted #{foundURLs.length} URL"
-      for foundURL in foundURLs
-        # remove the href= 
-        foundURL = foundURL[6..-2]
-        if (foundURL.indexOf '#!') isnt -1
-          foundURL = parseURL foundURL, location
-          found foundURL
-          #console.log "#{foundURL}"
+    if page
+      location = getLocation page
+      console.log "analyzing #{url}"
+      foundURLs = extractUrlsFromPage page
+      if foundURLs
+        console.log "extracted #{foundURLs.length} URL"
+        for foundURL in foundURLs
+          if (foundURL.indexOf '#!') isnt -1
+            foundURL = parseURL foundURL, location
+            #found foundURL
+          console.log "#{foundURL}"
+          crawlPage foundURL, found
+      else
+        console.log "found no URLs"
     else
-      console.log "found no URLs"
-    finish()
+      console.log "bad url: #{url}"
+    if finish
+      finish()
 
 
 ###
@@ -147,13 +164,13 @@ connect (conn) ->
   return console.log("connection failure.") unless conn
   conn.onRenderRequest = (request) ->
     if(request.crawl)
-        console.log 'crawlin'
         crawlPage(request.url,
           (url) -> (
             console.log "needs snapshot: #{url}"
             conn.notify("found", url)
           ),
           () -> (
+            console.log "crawl complete"
             conn.notify("complete")
           )
         )
