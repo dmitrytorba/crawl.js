@@ -10,6 +10,8 @@ pushServerUrl = sys.args[1]
 
 renderingWait = Number(sys.args[6] || 1000)
 
+reusablePage = null
+
 ###
  Loading page
 ###
@@ -65,61 +67,167 @@ uploadFile = (file, form, callback) ->
         callback null
       page.release()
 
+###
+ Util function: check if string contains fragment
+###
+String.prototype.contains = (str) ->
+  (this.indexOf str) isnt -1
 
-parseURL = (url, location) ->
-  if url[0] is '#'
+
+###
+ Util function: check if string starts with fragment
+###
+String.prototype.startsWith = (str) ->
+  (this.indexOf str) is 0
+
+###
+ Check if url is a full url 
+###
+isCanonical = (url) ->
+  url.startsWith('http')
+
+###
+ Convert href into canonical url 
+###
+parseURL = (url, page) ->
+  location = getLocation page
+  domainRoot = "#{location.protocol}//#{location.host}"
+
+  if location.pathname.contains '/'
+    path = location.pathname[0..location.pathname.lastIndexOf('/')]
+  else
+    path = ''
+
+  currentLocation = "#{domainRoot}#{path}#{location.search}"
+
+  if isCanonical(url)
+    # case href="canoncial URL"
+    url
+  else if url.startsWith '#'
+    # case: href="#tag'
     if (location.href.indexOf '#') is -1
+      # append tag
       location.href + url
     else
+      # replace existing tag
       location.href.replace /#.*/, url
+  else if url.startsWith '/'
+    # case href="path from root"
+    domainRoot + url
   else
-    #TODO: other cases
-    url
+    # case href="path from current location"
+    currentLocation + url
 
+###
+ Parse url to get its parts  
+###
 getLocation = (page) ->
     location =
       href: (page.evaluate ->
         window.location.href),
+      host: (page.evaluate ->
+        window.location.host),
+      hostname: (page.evaluate ->
+        window.location.hostname),
+      pathname: (page.evaluate ->
+        window.location.pathname),
+      port: (page.evaluate ->
+        window.location.port),
+      protocol: (page.evaluate ->
+        window.location.protocol)
+      search: (page.evaluate ->
+        window.location.search),
       hash: (page.evaluate ->
         window.location.hash)
 
+###
+ Find hrefs on the html page 
+###
 extractUrlsFromPage = (page) ->
   result = []
   hrefs = page.content.match /href=['\"]([^'\"]*)['\"]/g
-  for href in hrefs
-    # remove the href= 
-    url = href[6..-2]
-    # check if empty
-    if url
-      # ignore css
-      result.push url
-  result
+  if hrefs
+    for href in hrefs
+      # remove the href= 
+      url = href[6..-2]
+      # check if empty
+      if url
+        # ignore css
+        if url[-4..-1] isnt '.css'
+          # make url canonical
+          url = parseURL url, page
+          # save it
+          result.push url
+    result
 
- 
+###
+ url regexes to never visit 
+###
+blockList = [
+  /.*ILinkListener.*/
+]
+
+###
+ ignore url? 
+###
+isBlockListed = (url) ->
+  for blockRegEx in blockList
+    if url.match blockRegEx
+      console.log "blocked: #{url}"
+      return true
 
 ###
  Crawl a site
 ###
-crawlPage = (url, found, finish) ->
-  loadPage url, (page) ->
-    if page
-      location = getLocation page
-      console.log "analyzing #{url}"
-      foundURLs = extractUrlsFromPage page
-      if foundURLs
-        console.log "extracted #{foundURLs.length} URL"
-        for foundURL in foundURLs
-          if (foundURL.indexOf '#!') isnt -1
-            foundURL = parseURL foundURL, location
-            #found foundURL
-          console.log "#{foundURL}"
-          crawlPage foundURL, found
+crawlSite = (url, found, finish) ->
+  crawlPage url, found, finish, null, {}
+
+###
+ Crawl a page
+###
+crawlPage = (url, found, finish, currentHost, alreadyCrawled) ->
+  if alreadyCrawled[url]
+    console.log "skipping: #{url}"
+    finish()
+  else
+    alreadyCrawled[url] = true
+    loadPage url, ((page) ->
+      if page
+        location = getLocation page
+        if !currentHost
+          currentHost = location.host
+        if location.host is currentHost
+          console.log "********analyzing #{url}"
+          foundURLs = extractUrlsFromPage page
+          if foundURLs and foundURLs.length isnt 0
+            console.log "extracted #{foundURLs.length} URL"
+            
+            i = foundURLs.length - 1
+            helper = () ->
+              if i isnt -1
+                foundURL = foundURLs[i]
+                console.log "Url# #{i+1} -> #{foundURL}"
+                i--
+                if isBlockListed foundURL
+                  console.log "blocked!"
+                  helper()
+                else
+                  helper()
+                  #crawlPage foundURL, found, helper, currentHost, alreadyCrawled
+                  found foundURL
+              else
+                finish()
+            helper()
+          else
+            console.log "found no URLs"
+            finish()
+        else
+          console.log "wrong host: #{location.host}"
+          finish()
       else
-        console.log "found no URLs"
-    else
-      console.log "bad url: #{url}"
-    if finish
-      finish()
+        console.log "bad url: #{url}"
+        finish()
+    )
 
 
 ###
@@ -164,7 +272,8 @@ connect (conn) ->
   return console.log("connection failure.") unless conn
   conn.onRenderRequest = (request) ->
     if(request.crawl)
-        crawlPage(request.url,
+      console.log "onCrawl: #{request.url}"
+      crawlSite(request.url,
           (url) -> (
             console.log "needs snapshot: #{url}"
             conn.notify("found", url)
