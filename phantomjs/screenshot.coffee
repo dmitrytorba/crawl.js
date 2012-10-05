@@ -25,6 +25,7 @@ loadPage = (url, callback) ->
   page.open url, (status) ->
     callback (if status is "success" then page else null)
   page
+  
 
 
 ###
@@ -160,6 +161,15 @@ extractUrlsFromPage = (page) ->
           result.push url
     result
 
+extractUrlsFromPage2 = (page) ->
+  foundURLs = page.evaluate ->
+    result = []
+    anchors = document.getElementsByTagName 'a'
+    for anchor in anchors
+      result.push anchor.href
+    result
+  foundURLs
+
 ###
  url regexes to never visit 
 ###
@@ -198,7 +208,7 @@ crawlPage = (url, found, finish, currentHost, alreadyCrawled) ->
           currentHost = location.host
         if location.host is currentHost
           console.log "********analyzing #{url}"
-          foundURLs = extractUrlsFromPage page
+          foundURLs = extractUrlsFromPage2 page
           if foundURLs and foundURLs.length isnt 0
             console.log "extracted #{foundURLs.length} URL"
             
@@ -228,6 +238,28 @@ crawlPage = (url, found, finish, currentHost, alreadyCrawled) ->
         console.log "bad url: #{url}"
         finish()
     )
+
+###
+ Get URLs on a page
+###
+getURLs = (url, foundCallback, finishCallback) ->
+  console.log "loading page: #{url}"
+  loadPage url, (page) ->
+    if page
+      console.log "loaded page: #{url}"
+      location = getLocation page
+      foundURLs = extractUrlsFromPage2 page
+      if foundURLs and foundURLs.length isnt 0
+        console.log "extracted #{foundURLs.length} URL"
+        for foundURL in foundURLs
+          console.log "found: #{foundURL}"
+          foundCallback(foundURL)
+      else
+        console.log "found no URLs"
+    else
+      console.log "failed load: #{url}"
+    console.log "**finished**"
+    finishCallback()
 
 
 ###
@@ -271,18 +303,12 @@ class Connection
 connect (conn) ->
   return console.log("connection failure.") unless conn
   conn.onRenderRequest = (request) ->
-    if(request.crawl)
-      console.log "onCrawl: #{request.url}"
-      crawlSite(request.url,
-          (url) -> (
-            console.log "needs snapshot: #{url}"
-            conn.notify("found", url)
-          ),
-          () -> (
-            console.log "crawl complete"
-            conn.notify("complete")
-          )
-        )
+    if request.type is "urls"
+      console.log "getting urls from #{request.url}"
+      getURLs request.url, (foundURL) ->
+          conn.notify "found", foundURL
+        , ->
+          conn.notify "complete"
     else
         filename = Math.random().toString(36).substring(2)
         file = "/tmp/#{filename}.html"

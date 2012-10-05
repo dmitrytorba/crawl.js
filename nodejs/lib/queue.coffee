@@ -4,7 +4,7 @@ events = require "events"
 ###
 class WorkerQueue extends events.EventEmitter
   maxWorkers: 100
-  maxRequests: 50
+  maxRequests: 250
 
   constructor: ->
     @_requests = []
@@ -29,6 +29,7 @@ class WorkerQueue extends events.EventEmitter
     else if @maxRequests > @_requests.length
       @_requests.push(request)
     else
+      console.log "Request Limit Exceeded"
       @emit "error", message: "Request Limit Exceeded"
 
 
