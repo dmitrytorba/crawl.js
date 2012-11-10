@@ -13,11 +13,12 @@ class WorkerQueue extends events.EventEmitter
   wait: (worker) ->
     request = @_requests.shift()
     if request
+      console.log "items in queue: #{@_workers.length}"
       worker.emit "dispatch", request
     else if @maxWorkers > @_workers.length
       @_workers.push(worker)
     else
-      @emit "error", message: "Workers Limit Exceeded"
+      console.log "Max Workers exeeded"
   
   remove: (worker) ->
     @_workers = (w for w in @_workers when w isnt worker)
@@ -30,7 +31,6 @@ class WorkerQueue extends events.EventEmitter
       @_requests.push(request)
     else
       console.log "Request Limit Exceeded"
-      @emit "error", message: "Request Limit Exceeded"
 
 
 module.exports = WorkerQueue

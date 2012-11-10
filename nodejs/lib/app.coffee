@@ -132,10 +132,39 @@ okToCrawl = (url) ->
   return false
 
 ###
+parts of the url to replace-rewrite
+(useful if you have a session parameter)
+###
+urlReplace = [
+  {
+    pattern: /\?\d{8,10}&/,
+    value: '?'
+  },
+  {
+    pattern: /\?\d{8,10}#/,
+    value: '#'
+  },
+  {
+    pattern: /#$/,
+    value: ''
+  }
+]
+
+###
+rewrite URL according to rules
+###
+rewriteURL = (url) ->
+  for urlReplacement in urlReplace
+    url = url.replace urlReplacement.pattern, urlReplacement.value
+  url
+
+###
 handler for url founds during crawl
 ###
 processURL = (foundURL) ->
   console.log "<renderer> found #{foundURL}"
+  foundURL = rewriteURL foundURL
+  console.log "after rewrite: #{foundURL}"
   if okToCrawl foundURL
     console.log "<requester> crawl"
     queue.enqueue
@@ -196,7 +225,6 @@ channels =
           queue.wait(renderer)
         socket.on "found", (response) ->
           processURL response.url
-          queue.wait(renderer)
         socket.on "fail", ->
           queue.wait(renderer)
         socket.on "disconnect", ->

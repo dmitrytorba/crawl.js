@@ -188,12 +188,14 @@ isBlockListed = (url) ->
 
 ###
  Crawl a site
+ DEPRECIATED
 ###
 crawlSite = (url, found, finish) ->
   crawlPage url, found, finish, null, {}
 
 ###
  Crawl a page
+ DEPRECIATED
 ###
 crawlPage = (url, found, finish, currentHost, alreadyCrawled) ->
   if alreadyCrawled[url]
@@ -257,10 +259,11 @@ getURLs = (url, foundCallback, finishCallback) ->
       else
         console.log "found no URLs"
     else
-      console.log "failed load: #{url}"
+      console.log "failed load: #{url}, #{page}"
     console.log "**finished**"
     finishCallback()
-
+    page.close()
+    console.log "closed page"
 
 ###
  Connecting to socket.IO push server

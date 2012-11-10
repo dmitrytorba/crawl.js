@@ -1,7 +1,13 @@
-Heroku Screenshot Server: Node.js
+AJAX Crawler
 =======================
 
-Deploying to Heroku
+Overview
+-----
+- the crawler has two parts: 1) the controller module and 2) the PhantomJS module
+- the PhantomJS module does two things:
+    a. load a page for a URL, search for anchor links, throw 'found' event for each link
+
+Running Locally
 -----
 
     $ heroku create --stack cedar
