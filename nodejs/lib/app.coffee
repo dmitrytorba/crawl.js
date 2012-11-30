@@ -58,8 +58,6 @@ the list of urls visted in this crawl
 ###
 alreadyCrawled = null
 
-
-
 ###
 setup crawl
 ###
@@ -112,7 +110,7 @@ isAlreadyCrawled = (url) ->
     alreadyCrawled[url] = true
     false
   else
-    console.log "$$$$$$$$$$$$ already crawled: #{url}"
+    #console.log "$$$$$$$$$$$$ already crawled: #{url}"
     true
 
 ###
@@ -162,9 +160,9 @@ rewriteURL = (url) ->
 handler for url founds during crawl
 ###
 processURL = (foundURL) ->
-  console.log "<renderer> found #{foundURL}"
+  #console.log "<renderer> found #{foundURL}"
   foundURL = rewriteURL foundURL
-  console.log "after rewrite: #{foundURL}"
+  #console.log "after rewrite: #{foundURL}"
   if okToCrawl foundURL
     console.log "<requester> crawl"
     queue.enqueue
@@ -191,7 +189,7 @@ io.configure ->
 
 channels =
   request:
-    io.of("/request")
+    io.of("/ui")
       .on "connection", (socket) ->
         console.log "<requester> connect"
         socket.on "render", (url) ->
@@ -212,7 +210,7 @@ channels =
           console.log "<requester> disconnect"
 
   render:
-    io.of("/render")
+    io.of("/phantom")
       .on "connection", (socket) ->
         console.log "<renderer> connect"
         renderer = new events.EventEmitter()
