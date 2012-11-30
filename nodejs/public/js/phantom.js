@@ -1,6 +1,6 @@
 var socket;
 function init() {
-  socket = io.connect("/render");
+  socket = io.connect("/phantom");
   socket.on("render", function(params) {
     console.log("render:"+JSON.stringify(params));
   });
