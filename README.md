@@ -1,4 +1,4 @@
-=== Running Locally
+## Running Locally
 1. Start node 
 
   cd nodejs
@@ -11,7 +11,8 @@ Mare sure you see "Express server listening on port 3000 in development mode"
   cd phantomjs
   phantomjs --cookies-file=/dev/null phantomWorker.coffee http://localhost:3000/phantom.html
 
-=== How it works
+## How it works
+
 - node runs an express server
 - express server hosts index.html (this is the UI for JSCrawl)
 - index.html uses socket.io to control app.coffee (/ui socket) 
