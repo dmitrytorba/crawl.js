@@ -8,6 +8,8 @@ function init() {
     socket.emit("crawl", url);
     return false;
   });
+
+  //TODO
   socket.on("image", function(url) {
     console.log('URL: ' + url);
     $('<br/>').prependTo($('#images'));
@@ -19,6 +21,26 @@ function init() {
       $('img:last-child').remove();
     }
   });
+ 
+  //new URL is found during the crawl
+  socket.on("foundURL", function(url) {
+    //TODO
+    console.log('URL: ' + url);
+    $('<br/>').prependTo($('#images'));
+    $('<a>').attr({
+            'href': url,
+            'target': '_blank'
+        }).html(url).prependTo($('#images'));
+    if ($('img').size() > 10) {
+      $('img:last-child').remove();
+    }
+  });
+
+  socket.on("jobs", function(count) {
+    var jobsCount = $('#jobsCount');
+    jobsCount.html(count);
+  });
+
 }
 
 $(init);

@@ -4,7 +4,7 @@ events = require "events"
 ###
 class WorkerQueue extends events.EventEmitter
   maxWorkers: 100
-  maxRequests: 250
+  maxRequests: 2500
 
   constructor: ->
     @_requests = []
@@ -12,8 +12,9 @@ class WorkerQueue extends events.EventEmitter
 
   wait: (worker) ->
     request = @_requests.shift()
+    @emit "jobs", @_requests.length
+    console.log "items in queue: #{@_requests.length}"
     if request
-      console.log "items in queue: #{@_workers.length}"
       worker.emit "dispatch", request
     else if @maxWorkers > @_workers.length
       @_workers.push(worker)
@@ -29,6 +30,7 @@ class WorkerQueue extends events.EventEmitter
       worker.emit "dispatch", request
     else if @maxRequests > @_requests.length
       @_requests.push(request)
+      @emit "jobs", @_requests.length
     else
       console.log "Request Limit Exceeded"
 

@@ -48,6 +48,10 @@ Worker Queue
 queue = new WorkerQueue()
 exports.queue = queue
 
+queue.on "jobs", (jobsCount) ->
+  console.log "jobCount: #{jobsCount}"
+  sockets.ui.emit "jobs", jobsCount
+
 ###
 the crawl is limited to this domain
 ###
@@ -160,15 +164,16 @@ rewriteURL = (url) ->
 handler for url founds during crawl
 ###
 processURL = (foundURL) ->
-  #console.log "<renderer> found #{foundURL}"
+  # clean up the URL
   foundURL = rewriteURL foundURL
-  #console.log "after rewrite: #{foundURL}"
+  # check if OK to continue crawl on this URL
   if okToCrawl foundURL
-    console.log "<requester> crawl"
+    # schedule a worker to crawl this URL
     queue.enqueue
       url: foundURL
       type: "urls"
-    channels.request.emit "image", foundURL
+    # let the UI know a valid URL was found
+    sockets.ui.emit "foundURL", foundURL
 
 
   #hash = sha1(response.url)
@@ -187,46 +192,53 @@ io.configure ->
   io.set "transports", ["xhr-polling"]
   io.set "polling duration", 10
 
-channels =
-  request:
+sockets =
+  ui:
     io.of("/ui")
       .on "connection", (socket) ->
-        console.log "<requester> connect"
+        console.log "<ui> connected"
+        # TODO 
         socket.on "render", (url) ->
-          console.log "<requester> render x#{url}"
+          console.log "<ui> render x#{url}"
           hash = sha1(url)
           queue.enqueue
             url: url
             type: "snapshot"
             hash: hash
             form: s3upload.createForm(encodeURIComponent(url))
+        # start a new crawl
         socket.on "crawl", (url) ->
-          console.log "<requester> crawl"
+          console.log "<ui> crawl requested"
           initCrawl url
           queue.enqueue
             url: url
             type: "urls"
         socket.on "disconnect", ->
-          console.log "<requester> disconnect"
+          console.log "<ui> disconnected"
 
   render:
     io.of("/phantom")
       .on "connection", (socket) ->
-        console.log "<renderer> connect"
+        console.log "<phantom> connected"
         renderer = new events.EventEmitter()
-        renderer.on "dispatch", (req) -> socket.emit "render", req
+        # TODO: remove?
+        renderer.on "dispatch", (req) -> 
+          socket.emit "render", req
+        # wait for work
         queue.wait(renderer)
+        # TODO
         socket.on "complete", (response) ->
           if response.snapshotUrl
             console.log "<renderer> notify #{response.snapshotUrl}"
-            channels.request.emit "image", response.snapshotUrl
+            sockets.ui.emit "image", response.snapshotUrl
           queue.wait(renderer)
+        # a URL was found during the crawl
         socket.on "found", (response) ->
           processURL response.url
         socket.on "fail", ->
           queue.wait(renderer)
         socket.on "disconnect", ->
-          console.log "<renderer> disconnect"
+          console.log "<phantom> disconnect"
           queue.remove(renderer)
 
 
