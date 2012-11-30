@@ -282,13 +282,13 @@ class Connection
   constructor: (@page) ->
     page.onConsoleMessage = (msg) =>
       console.log msg
-      return unless msg.indexOf "render:" is 0
+      return unless msg.indexOf "dispatch:" is 0
       try
-        request = JSON.parse(msg.substring(7))
-        @onRenderRequest?(request)
+        request = JSON.parse(msg.substring(9))
+        @onDispatch?(request)
       catch e
 
-  onRenderRequest: null
+  onDispatch: null
 
   notify: (message) ->
     if message is "found"
@@ -305,7 +305,7 @@ class Connection
 ###
 connect (conn) ->
   return console.log("connection failure.") unless conn
-  conn.onRenderRequest = (request) ->
+  conn.onDispatch = (request) ->
     if request.type is "urls"
       console.log "getting urls from #{request.url}"
       getURLs request.url, (foundURL) ->

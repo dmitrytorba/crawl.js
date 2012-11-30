@@ -27,8 +27,8 @@ app.configure ->
 
 app.configure "development", ->
   app.use express.errorHandler(
-    dumpExceptions: true
-    showStack: true
+    dumpExceptions: false
+    showStack: false
   )
 
 app.configure "production", ->
@@ -160,6 +160,23 @@ rewriteURL = (url) ->
     url = url.replace urlReplacement.pattern, urlReplacement.value
   url
 
+
+###
+ url regexes to snapshot 
+###
+snapshotList = [
+  /.*#!.*/
+]
+
+###
+check if url needs snapshot 
+###
+needsSnapshot = (url) ->
+  for snapshotRegEx in snapshotList
+    if url.match snapshotRegEx
+      return true
+  return false
+
 ###
 handler for url founds during crawl
 ###
@@ -173,14 +190,15 @@ processURL = (foundURL) ->
       url: foundURL
       type: "urls"
     # let the UI know a valid URL was found
-    sockets.ui.emit "foundURL", foundURL
-
-
-  #hash = sha1(response.url)
-  #queue.enqueu
-  #  url: response.url
-  #  hash: hash
-  #  form: s3upload.createForm(encodeURIComponent(response.url))
+    #sockets.ui.emit "foundURL", foundURL
+    if needsSnapshot foundURL
+      # sched a job to take the snapshot
+      # sockets.ui.emit "foundURL", foundURL
+      hash = sha1(foundURL)
+      queue.enqueue
+        url: foundURL
+        hash: hash
+        form: s3upload.createForm(encodeURIComponent(foundURL))
 
 
 ###
@@ -197,7 +215,7 @@ sockets =
     io.of("/ui")
       .on "connection", (socket) ->
         console.log "<ui> connected"
-        # TODO 
+        # TODO
         socket.on "render", (url) ->
           console.log "<ui> render x#{url}"
           hash = sha1(url)
@@ -220,26 +238,26 @@ sockets =
     io.of("/phantom")
       .on "connection", (socket) ->
         console.log "<phantom> connected"
-        renderer = new events.EventEmitter()
-        # TODO: remove?
-        renderer.on "dispatch", (req) -> 
-          socket.emit "render", req
+        phantomWorker = new events.EventEmitter()
+        # go do this work 
+        phantomWorker.on "dispatch", (req) -> 
+          socket.emit "dispatch", req
         # wait for work
-        queue.wait(renderer)
+        queue.wait(phantomWorker)
         # TODO
         socket.on "complete", (response) ->
           if response.snapshotUrl
-            console.log "<renderer> notify #{response.snapshotUrl}"
+            console.log "<phantom> notify #{response.snapshotUrl}"
             sockets.ui.emit "image", response.snapshotUrl
-          queue.wait(renderer)
+          queue.wait(phantomWorker)
         # a URL was found during the crawl
         socket.on "found", (response) ->
           processURL response.url
         socket.on "fail", ->
-          queue.wait(renderer)
+          queue.wait(phantomWorker)
         socket.on "disconnect", ->
           console.log "<phantom> disconnect"
-          queue.remove(renderer)
+          queue.remove(phantomWorker)
 
 
 ###

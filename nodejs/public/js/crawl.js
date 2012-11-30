@@ -27,14 +27,13 @@ function init() {
     //TODO
     console.log('URL: ' + url);
     $('<br/>').prependTo($('#images'));
-    $('<a>').attr({
-            'href': url,
-            'target': '_blank'
-        }).html(url).prependTo($('#images'));
-    if ($('img').size() > 10) {
-      $('img:last-child').remove();
-    }
-  });
+    var link = $('<a>');
+    link.attr({
+      'href': url,
+      'target': '_blank'
+     }).html(url);
+     link.prependTo($('#images'));
+    });
 
   socket.on("jobs", function(count) {
     var jobsCount = $('#jobsCount');

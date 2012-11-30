@@ -13,7 +13,6 @@ class WorkerQueue extends events.EventEmitter
   wait: (worker) ->
     request = @_requests.shift()
     @emit "jobs", @_requests.length
-    console.log "items in queue: #{@_requests.length}"
     if request
       worker.emit "dispatch", request
     else if @maxWorkers > @_workers.length

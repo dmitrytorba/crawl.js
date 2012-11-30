@@ -1,6 +1,6 @@
 var socket;
 function init() {
-  socket = io.connect("/request");
+  socket = io.connect("/ui");
   $('form').submit(function(e) {
     e.preventDefault();
     e.stopPropagation();
