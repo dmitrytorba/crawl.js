@@ -1,5 +1,8 @@
-Heroku Screenshot Server: PhantomJS
-=======================
+
+Run from terminal
+-----
+
+    phantomjs --cookies-file=/dev/null htmlshot.coffee http://localhost:3000/render.html
 
 Deploying to Heroku
 -----
