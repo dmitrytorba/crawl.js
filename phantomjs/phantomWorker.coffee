@@ -54,19 +54,19 @@ uploadFile = (file, form, callback) ->
   html += "</form></body></html>"
   page.content = html
   page.uploadFile("input[name=file]", file)
-  page.evaluate -> document.forms[0].submit()
   page.onLoadFinished = (status) ->
     url = page.evaluate( -> location.href )
     if url is form.action
       page.onLoadFinished = null
-      console.log "uploading done."
+      # console.log "s3 response: #{page.content}"
       loc = page.content.match(/<Location>(http[^<]+)<\/Location>/)
       if loc
-        console.log "file location: #{loc[1]}"
+        # console.log "file location: #{loc[1]}"
         callback loc[1]
       else
         callback null
       page.release()
+  page.evaluate -> document.forms[0].submit()
 
 ###
  Util function: check if string contains fragment
@@ -297,7 +297,7 @@ class Connection
       args = Array.prototype.slice.call(arguments, 1)
       @page.evaluate("function(){ notifyComplete('#{args.join("','")}'); }")
     else
-      @page.evaluate("function(){ notifyFailure('#{args.join("','")}'); }")
+      @page.evaluate("function(){ notifyFailure('#{message}'); }")
 
 
 ###
@@ -321,6 +321,7 @@ connect (conn) ->
             if snapshotUrl
               conn.notify("complete", request.url, snapshotUrl)
             else
+              console.log "FAILURE! #{request.url}"
               conn.notify("failure",  request.url)
             fs.remove(file)
 

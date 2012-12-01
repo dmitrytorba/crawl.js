@@ -70,6 +70,8 @@ initCrawl = (url) ->
   urlObj = URL.parse url
   console.log "crawl domain: #{urlObj.host}"
   crawlDomain = urlObj.host
+  # set up s3
+  s3upload.setupDomain crawlDomain
   #reset crawl list
   alreadyCrawled = {}
 
@@ -85,7 +87,8 @@ parseURL = (urlStr) ->
  url regexes to never visit 
 ###
 blackList = [
-  /.*ILinkListener.*/
+  /.*ILinkListener.*/,
+  /.*appdirect.com\/#.*/
 ]
 
 ###

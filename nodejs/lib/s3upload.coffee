@@ -7,7 +7,7 @@ config =
   upload:
     bucketName: process.env.UPLOAD_BUCKET_NAME
     path: 'seo/'
-    expiration: 5
+    expiration: 360
 
 toISO8601 = (d) ->
   pad2 = (n) -> (if n < 10 then '0' else '') + n
@@ -29,8 +29,11 @@ toISO8601 = (d) ->
     'Z'
   ].join('')
 
-
 module.exports =
+  setupDomain: (domain) ->
+    # set upload folder 
+    config.upload.path = domain + "/"
+    # TODO clear folder
   createForm: (filename) ->
     filePath = config.upload.path + filename + '.html'
     policy =
@@ -48,7 +51,7 @@ module.exports =
                       .update(policyB64)
                       .digest('base64')
     {
-      action : "http://#{config.upload.bucketName}.s3.amazonaws.com/"
+      action : "https://#{config.upload.bucketName}.s3.amazonaws.com/"
       fields :
         AWSAccessKeyId: config.aws.accessKeyId
         key: filePath
