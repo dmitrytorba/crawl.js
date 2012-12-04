@@ -1,4 +1,5 @@
 crypto = require "crypto"
+knox   = require "knox"
 
 config =
   aws:
@@ -29,11 +30,30 @@ toISO8601 = (d) ->
     'Z'
   ].join('')
 
+
+s3client = knox.createClient
+              key: config.aws.accessKeyId,
+              secret: config.aws.secretAccessKey
+              bucket: config.upload.bucketName
+
+clearS3Folder = (path) ->
+  config = prefix: path + '/'
+  console.log "config: #{config}"
+  s3client.list(config, (err, data) ->
+    console.log "data: #{data}"
+    console.log "err: #{err}"
+    # TODO: handle data.IsTruncated
+    if data and data.contents
+      for item in data.contents
+        console.log "item: #{item.key}"
+        s3client.del item.key
+  )
+
 module.exports =
   setupPath: (path) ->
     # set upload folder 
     config.upload.path = path + "/"
-    # TODO clear folder
+    clearS3Folder path
   createForm: (filename) ->
     filePath = config.upload.path + filename + '.html'
     policy =
