@@ -2,7 +2,7 @@
 Run from terminal
 -----
 
-    phantomjs --cookies-file=/dev/null htmlshot.coffee http://localhost:3000/render.html
+    phantomjs --cookies-file=/dev/null phantomWorker.coffee http://localhost:3000/phantom.html
 
 Deploying to Heroku
 -----
