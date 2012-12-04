@@ -8,7 +8,14 @@
   </head>
   <body>
     <form>
-      URL to crawl: <input type="text" id="url">
+      <div>
+        <label for="url">URL to crawl:</label>
+        <input type="text" id="url" required>
+      </div>
+      <div>
+        <label for="path">S3 folder name:</label>
+        <input type="text" id="path" required>
+      </div>
       <input type="submit" value="Submit">
     </form>
     Current Job Count: <span id="jobsCount"></span>

@@ -30,9 +30,9 @@ toISO8601 = (d) ->
   ].join('')
 
 module.exports =
-  setupDomain: (domain) ->
+  setupPath: (path) ->
     # set upload folder 
-    config.upload.path = domain + "/"
+    config.upload.path = path + "/"
     # TODO clear folder
   createForm: (filename) ->
     filePath = config.upload.path + filename + '.html'

@@ -65,13 +65,14 @@ alreadyCrawled = null
 ###
 setup crawl
 ###
-initCrawl = (url) ->
+initCrawl = (config) ->
   #reset crawl domain
-  urlObj = URL.parse url
+  urlObj = URL.parse config.url
   console.log "crawl domain: #{urlObj.host}"
   crawlDomain = urlObj.host
+  path = config.path || crawlDomain
   # set up s3
-  s3upload.setupDomain crawlDomain
+  s3upload.setupPath path
   #reset crawl list
   alreadyCrawled = {}
 
@@ -220,7 +221,7 @@ sockets =
         console.log "<ui> connected"
         # TODO
         socket.on "render", (url) ->
-          console.log "<ui> render x#{url}"
+          console.log "<ui> render #{url}"
           hash = sha1(url)
           queue.enqueue
             url: url
@@ -228,11 +229,11 @@ sockets =
             hash: hash
             form: s3upload.createForm(encodeURIComponent(url))
         # start a new crawl
-        socket.on "crawl", (url) ->
+        socket.on "crawl", (config) ->
           console.log "<ui> crawl requested"
-          initCrawl url
+          initCrawl config
           queue.enqueue
-            url: url
+            url: config.url
             type: "urls"
         socket.on "disconnect", ->
           console.log "<ui> disconnected"
@@ -243,7 +244,7 @@ sockets =
         console.log "<phantom> connected"
         phantomWorker = new events.EventEmitter()
         # go do this work 
-        phantomWorker.on "dispatch", (req) -> 
+        phantomWorker.on "dispatch", (req) ->
           socket.emit "dispatch", req
         # wait for work
         queue.wait(phantomWorker)

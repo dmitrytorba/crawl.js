@@ -5,7 +5,11 @@ function init() {
     e.preventDefault();
     e.stopPropagation();
     var url = $('#url').val();
-    socket.emit("crawl", url);
+    var path = $('#path').val();
+    socket.emit("crawl", { 
+      url: url,
+      path: path
+    });
     return false;
   });
 
