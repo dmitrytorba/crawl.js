@@ -258,11 +258,11 @@ getURLs = (url, foundCallback, finishCallback) ->
           foundCallback(foundURL)
       else
         console.log "found no URLs"
+      page.close()
     else
       console.log "failed load: #{url}, #{page}"
     console.log "**finished**"
     finishCallback()
-    page.close()
     console.log "closed page"
 
 ###
