@@ -1,0 +1,20 @@
+#mainForm {
+  margin: 0 auto;
+  width: 790px;
+  font-size: 20px;
+  margin-top: 20px;
+}
+#mainForm input[type=text] {
+  height: 30px;
+  width: 790px;
+  font-size: 20px;
+}
+#mainForm .row {
+  margin-top: 10px;
+}
+#startButton {    
+    display: block;
+    font-size: 20px;
+    margin: 20px auto;
+    width: 300px;
+}

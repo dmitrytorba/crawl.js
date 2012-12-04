@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" href="/css/base.css" />
       <!-- <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> -->
     <script type="text/javascript" src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="/js/crawl.js"></script>
   </head>
   <body>
-    <form>
-      <div>
-        <label for="url">URL to crawl:</label>
+    <form id="mainForm">
+      <div class="row">
+        <label for="url">URL where to start the crawl:</label>
         <input type="text" id="url" required>
       </div>
-      <div>
-        <label for="path">S3 folder name:</label>
+      <div class="row">
+        <label for="path">S3 folder name where to put the snapshots:</label>
         <input type="text" id="path" required>
       </div>
-      <input type="submit" value="Submit">
+      <input id="startButton" type="submit" value="Start">
     </form>
     Current Job Count: <span id="jobsCount"></span>
     <div id="images"></div>

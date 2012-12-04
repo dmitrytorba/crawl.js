@@ -38,7 +38,6 @@ s3client = knox.createClient
 
 clearS3Folder = (path) ->
   config = prefix: path + '/'
-  console.log "config: #{config}"
   s3client.list(config, (err, data) ->
     console.log "data: #{data}"
     console.log "err: #{err}"
