@@ -31,25 +31,32 @@ toISO8601 = (d) ->
   ].join('')
 
 
-s3client = knox.createClient
-              key: config.aws.accessKeyId,
-              secret: config.aws.secretAccessKey
-              bucket: config.upload.bucketName
+getS3Client = () ->
+  if not @s3client
+    @s3client = knox.createClient
+                  key: config.aws.accessKeyId,
+                  secret: config.aws.secretAccessKey
+                  bucket: config.upload.bucketName
+  @s3client
 
-clearS3Folder = (path) ->
-  config = prefix: path + '/'
-  s3client.list(config, (err, data) ->
-    console.log "data: #{data}"
-    console.log "err: #{err}"
+
+clearS3Folder = (path, done) ->
+  s3client = getS3Client()
+  s3client.list(prefix: path + '/', (err, data) ->
     # TODO: handle data.IsTruncated
-    if data and data.contents
-      for item in data.contents
-        console.log "item: #{item.key}"
-        s3client.del item.key
+    if data and data.Contents
+      deleteList = []
+      for item in data.Contents
+        deleteList.push item.Key
+      s3client.deleteMultiple deleteList, (err, res) ->
+        done()
   )
 
 module.exports =
+  clearS3Folder: clearS3Folder
+  getS3Client: getS3Client
   setupPath: (path) ->
+    console.log "setting path: #{config.upload}"
     # set upload folder 
     config.upload.path = path + "/"
     clearS3Folder path
