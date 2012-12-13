@@ -1,7 +1,7 @@
 ## What is Crawl.js
 
 A solution for making an AJAX application crawlable. 
-CrawlJs is a PhantomJs site crawler that captures HTML
+CrawlJS is a PhantomJS site crawler that takes HTML
 snapshots and stores them to S3.
 
 ## How it works
