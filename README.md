@@ -10,8 +10,6 @@ snapshots and stores them to S3.
         cd nodejs
         node app.js
 
-Mare sure you see "Express server listening on port 3000 in development mode"
-
 2. Start phantomjs, pointing it to node server
 
         cd phantomjs
