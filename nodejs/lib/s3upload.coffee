@@ -49,7 +49,7 @@ clearS3Folder = (path, done) ->
       for item in data.Contents
         deleteList.push item.Key
       s3client.deleteMultiple deleteList, (err, res) ->
-        done()
+        done() if done
   )
 
 module.exports =
