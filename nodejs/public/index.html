@@ -17,9 +17,14 @@
         <label for="path">S3 folder name where to put the snapshots:</label>
         <input type="text" id="path" required>
       </div>
-      <input id="startButton" type="submit" value="Start">
+      <div class="buttons cf">
+        <input id="stopButton" type="button" value="Stop" />
+        <input id="startButton" type="submit" value="Start" />
+      </div>
     </form>
-    Current Job Count: <span id="jobsCount"></span>
+    <div id="jobCountContainer">
+      Current Job Count: <span id="jobsCount"></span>
+    </div>
     <div id="images"></div>
   </body>
 </html>

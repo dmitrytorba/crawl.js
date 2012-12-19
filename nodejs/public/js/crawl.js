@@ -1,6 +1,18 @@
 var socket;
 function init() {
   socket = io.connect("/ui");
+
+  var stopButton = $('#stopButton');
+  var startButton = $('#startButton');
+
+  stopButton.click(function() {
+    socket.emit("kill");
+    
+    stopButton.hide();
+    startButton.css('display', 'block');
+
+  });
+
   $('form').submit(function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -10,8 +22,13 @@ function init() {
       url: url,
       path: path
     });
+
+    startButton.hide();
+    stopButton.css('display', 'block');
+
     return false;
   });
+
 
   //TODO
   socket.on("image", function(url) {

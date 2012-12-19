@@ -12,9 +12,16 @@
 #mainForm .row {
   margin-top: 10px;
 }
-#startButton {    
+.buttons input {    
     display: block;
     font-size: 20px;
-    margin: 20px auto;
     width: 300px;
+    margin: 20px auto;
+}
+#stopButton {
+  display: none;
+}
+#jobCountContainer {
+  position: absolute;
+  top:0;
 }

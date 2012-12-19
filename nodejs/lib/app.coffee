@@ -235,6 +235,9 @@ sockets =
           queue.enqueue
             url: config.url
             type: "urls"
+        socket.on "kill", ->
+          console.log "<ui> kill requested"
+          queue.kill()
         socket.on "disconnect", ->
           console.log "<ui> disconnected"
 

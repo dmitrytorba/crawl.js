@@ -33,5 +33,10 @@ class WorkerQueue extends events.EventEmitter
     else
       console.log "Request Limit Exceeded"
 
+  kill: () ->
+    @_requests = []
+    @emit "jobs", @_requests.length
+
+
 
 module.exports = WorkerQueue
