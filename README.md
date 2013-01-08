@@ -34,6 +34,12 @@ snapshots and stores them to S3.
         $ git push heroku master
         $ heroku ps:scale renderer=<num of phantomjs screenshot renderer>
 
+## Running Tests
+
+        cd nodejs
+        mocha
+
+
 ## How it works
 
 - node runs an express server
