@@ -1,5 +1,5 @@
 crypto = require "crypto"
-knox   = require "knox"
+knox = require "knox"
 
 config =
   aws:
@@ -34,9 +34,9 @@ toISO8601 = (d) ->
 getS3Client = () ->
   if not @s3client
     @s3client = knox.createClient
-                  key: config.aws.accessKeyId,
-                  secret: config.aws.secretAccessKey
-                  bucket: config.upload.bucketName
+      key: config.aws.accessKeyId,
+      secret: config.aws.secretAccessKey
+      bucket: config.upload.bucketName
   @s3client
 
 
@@ -52,40 +52,55 @@ clearS3Folder = (path, done) ->
         done() if done
   )
 
+setPath = (path) ->
+  console.log "setting path: #{config.upload}"
+  # set upload folder
+  config.upload.path = path + "/"
+  clearS3Folder path
+
+setBucket = (bucket) ->
+  config.upload.bucketName = bucket || config.upload.bucketName
+
+setId = (id) ->
+  config.aws.accessKeyId = id || config.aws.accessKeyId
+
+setPasswd = (passwd) ->
+  config.aws.secretAccessKey = passwd || config.aws.secretAccessKey
+
+createForm = (filename) ->
+  filePath = config.upload.path + filename + '.html'
+  policy =
+    expiration: toISO8601(new Date(Date.now() + 60000 * config.upload.expiration))
+    conditions: [
+      { bucket: config.upload.bucketName }
+      [ "starts-with", "$key", config.upload.path ]
+      { acl: "public-read" }
+      { success_action_status: "201" }
+      [ "starts-with", "$Content-Type", "text/" ]
+      [ "content-length-range", 0, 524288 ]
+    ]
+  policyB64 = new Buffer(JSON.stringify(policy)).toString('base64')
+  signature = crypto.createHmac('sha1', config.aws.secretAccessKey)
+  .update(policyB64)
+  .digest('base64')
+  {
+  action: "https://#{config.upload.bucketName}.s3.amazonaws.com/"
+  fields:
+    AWSAccessKeyId: config.aws.accessKeyId
+    key: filePath
+    acl: "public-read"
+    success_action_status: "201"
+    "Content-Type": "text/html"
+    policy: policyB64
+    signature: signature
+  }
+
 module.exports =
   clearS3Folder: clearS3Folder
   getS3Client: getS3Client
-  setupPath: (path) ->
-    console.log "setting path: #{config.upload}"
-    # set upload folder 
-    config.upload.path = path + "/"
-    clearS3Folder path
-  createForm: (filename) ->
-    filePath = config.upload.path + filename + '.html'
-    policy =
-      expiration : toISO8601(new Date(Date.now() + 60000 * config.upload.expiration))
-      conditions : [
-        { bucket: config.upload.bucketName }
-        [ "starts-with", "$key", config.upload.path ]
-        { acl: "public-read" }
-        { success_action_status : "201" }
-        [ "starts-with", "$Content-Type", "text/" ]
-        [ "content-length-range", 0, 524288 ]
-      ]
-    policyB64 = new Buffer(JSON.stringify(policy)).toString('base64')
-    signature = crypto.createHmac('sha1', config.aws.secretAccessKey)
-                      .update(policyB64)
-                      .digest('base64')
-    {
-      action : "https://#{config.upload.bucketName}.s3.amazonaws.com/"
-      fields :
-        AWSAccessKeyId: config.aws.accessKeyId
-        key: filePath
-        acl: "public-read"
-        success_action_status: "201"
-        "Content-Type": "text/html"
-        policy: policyB64
-        signature: signature
-    }
-
+  setPath: setPath
+  setBucket: setBucket
+  setId: setId
+  setPasswd: setPasswd
+  createForm: createForm
 

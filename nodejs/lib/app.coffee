@@ -72,7 +72,10 @@ initCrawl = (config) ->
   crawlDomain = urlObj.host
   path = config.path || crawlDomain
   # set up s3
-  s3upload.setupPath path
+  s3upload.setBucket config.bucket
+  s3upload.setId config.id
+  s3upload.setPasswd config.passwd
+  s3upload.setPath path
   #reset crawl list
   alreadyCrawled = {}
 

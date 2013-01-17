@@ -1,30 +1,42 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <link rel="stylesheet" href="/css/base.css" />
-      <!-- <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> -->
+<head>
+    <link rel="stylesheet" href="/css/base.css"/>
+    <!-- <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> -->
     <script type="text/javascript" src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="/js/crawl.js"></script>
-  </head>
-  <body>
-    <form id="mainForm">
-      <div class="row">
+</head>
+<body>
+<form id="mainForm">
+    <div class="row">
         <label for="url">URL where to start the crawl:</label>
         <input type="text" id="url" required>
-      </div>
-      <div class="row">
-        <label for="path">S3 folder name where to put the snapshots:</label>
-        <input type="text" id="path" required>
-      </div>
-      <div class="buttons cf">
-        <input id="stopButton" type="button" value="Stop" />
-        <input id="startButton" type="submit" value="Start" />
-      </div>
-    </form>
-    <div id="jobCountContainer">
-      Current Job Count: <span id="jobsCount"></span>
     </div>
-    <div id="images"></div>
-  </body>
+    <div class="row">
+        <label for="s3bucket">S3 Bucket:</label>
+        <input type="text" id="s3bucket" required>
+    </div>
+    <div class="row">
+        <label for="s3id">S3 Access Key ID:</label>
+        <input type="text" id="s3id" required>
+    </div>
+    <div class="row">
+        <label for="s3passwd">S3 Secret Access Key:</label>
+        <input type="text" id="s3passwd" required>
+    </div>
+    <div class="row">
+        <label for="path">S3 path for snapshots:</label>
+        <input type="text" id="path" required>
+    </div>
+    <div class="buttons cf">
+        <input id="stopButton" type="button" value="Stop"/>
+        <input id="startButton" type="submit" value="Start"/>
+    </div>
+</form>
+<div id="jobCountContainer">
+    Current Job Count: <span id="jobsCount"></span>
+</div>
+<div id="images"></div>
+</body>
 </html>
