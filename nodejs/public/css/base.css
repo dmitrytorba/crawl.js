@@ -4,7 +4,8 @@
   font-size: 20px;
   margin-top: 20px;
 }
-#mainForm input[type=text] {
+#mainForm input[type=text],
+#mainForm input[type=password]{
   height: 30px;
   width: 790px;
   font-size: 20px;
