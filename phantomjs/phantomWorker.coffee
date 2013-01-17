@@ -270,10 +270,12 @@ getURLs = (url, foundCallback, finishCallback) ->
 ###
 connect = (callback) ->
   loadPage pushServerUrl, (page) ->
-    return conn(null) unless page
-    console.log "connected to #{pushServerUrl}"
-    conn = new Connection(page)
-    callback(conn)
+    if page
+      console.log "connected to #{pushServerUrl}"
+      conn = new Connection(page)
+      callback(conn)
+    else
+      console.log "could NOT connect to #{pushServerUrl}"
 
 ###
  SocketIO server connection
