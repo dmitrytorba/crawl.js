@@ -15,6 +15,8 @@ snapshots and stores them to S3.
         cd phantomjs
         phantomjs --cookies-file=/dev/null phantomWorker.coffee http://localhost:3000/phantom.html
 
+3. Navigate browser to http://localhost:3000/ to control the crawler
+
 ## Running on Heroku 
 
 1. NodeJS
@@ -50,6 +52,17 @@ snapshots and stores them to S3.
 - phantom workers trigger JS on phatom.html
 - phantom.html uses socket.io to talk to app.coffee (/phantom socket) 
 
+
+## IntelliJ
+
+- File > New Project ... 
+- Create Project From Scratch
+- Next
+- Project Name: crawl.js
+- Project File Location: [crawl.js root path]
+- Make sure "Create Module" is checked and select "Web Module"
+- Content root: [crawl.js root path]
+- Module File Location: [crawl.js root path]
 
 
 
