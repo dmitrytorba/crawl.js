@@ -5,36 +5,27 @@ CrawlJS is a PhantomJS site crawler that takes HTML
 snapshots and stores them to S3.
 
 ## Running Locally
-1. Start node 
+1. Install NodeJS, PhantomJS and Heroku Toolbelt
 
-        cd nodejs
-        node app.js
+2. Run everything via foreman
 
-2. Start phantomjs, pointing it to node server
+        foreman start
 
-        cd phantomjs
-        phantomjs --cookies-file=/dev/null phantomWorker.coffee http://localhost:3000/phantom.html
-
-3. Navigate browser to http://localhost:3000/ to control the crawler
+3. Navigate browser to http://localhost:5000/ to control the crawler
 
 ## Running on Heroku 
 
-1. NodeJS
 
-
-        $ heroku create --stack cedar
-        $ heroku config:add AWS_ACCESS_KEY_ID=<your aws access key id>
-        $ heroku config:add AWS_SECRET_ACCESS_KEY=<your aws secret access key>
-        $ heroku config:add UPLOAD_BUCKET_NAME=<aws s3 bucket name to store screenshots>
+        $ heroku create
+        $ heroku create --stack cedar --buildpack https://github.com/ddollar/heroku-buildpack-multi.git
+        $ heroku apps:rename crawljs
+        $ heroku config:add PHANTOMJS_URL=http://crawljs.herokuapp.com/phantom.html
+        $ heroku config:add PATH="/usr/local/bin:/usr/bin:/bin:/app/vendor/phantomjs/bin"
+        $ heroku config:add LD_LIBRARY_PATH="/usr/local/lib:/usr/lib:/lib:/app/vendor/phantomjs/lib"
         $ git push heroku master
+        $ heroku ps:scale web=1
+        $ heroku ps:scale renderer=1
 
-2. PhantomJS
-
-
-        $ heroku create --stack cedar --buildpack http://github.com/stomita/heroku-buildpack-phantomjs.git
-        $ heroku config:add PUSH_SERVER_URL=http://<app name of nodejs screenshot server>.herokuapp.com/phantom.html
-        $ git push heroku master
-        $ heroku ps:scale renderer=<num of phantomjs screenshot renderer>
 
 ## Running Tests
 
