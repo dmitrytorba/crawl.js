@@ -3,14 +3,10 @@ sys     = require('system')
 webpage = require('webpage')
 
 if sys.args.length < 2
-  console.log "Usage: phantomjs screenshot.coffee <push-server-url> [screen-width] [screen-height] [image-width] [image-height] [wait]"
+  console.log "Usage: phantomjs phantomWorker.coffee <PHANTOMJS_URL>"
   return
 
 pushServerUrl = sys.args[1]
-
-renderingWait = Number(sys.args[6] || 1000)
-
-reusablePage = null
 
 ###
  Loading page
@@ -25,8 +21,6 @@ loadPage = (url, callback) ->
   page.open url, (status) ->
     callback (if status is "success" then page else null)
   page
-  
-
 
 ###
  Render and upload page image
@@ -69,57 +63,6 @@ uploadFile = (file, form, callback) ->
   page.evaluate -> document.forms[0].submit()
 
 ###
- Util function: check if string contains fragment
-###
-String.prototype.contains = (str) ->
-  (this.indexOf str) isnt -1
-
-
-###
- Util function: check if string starts with fragment
-###
-String.prototype.startsWith = (str) ->
-  (this.indexOf str) is 0
-
-###
- Check if url is a full url 
-###
-isCanonical = (url) ->
-  url.startsWith('http')
-
-###
- Convert href into canonical url 
-###
-parseURL = (url, page) ->
-  location = getLocation page
-  domainRoot = "#{location.protocol}//#{location.host}"
-
-  if location.pathname.contains '/'
-    path = location.pathname[0..location.pathname.lastIndexOf('/')]
-  else
-    path = ''
-
-  currentLocation = "#{domainRoot}#{path}#{location.search}"
-
-  if isCanonical(url)
-    # case href="canoncial URL"
-    url
-  else if url.startsWith '#'
-    # case: href="#tag'
-    if (location.href.indexOf '#') is -1
-      # append tag
-      location.href + url
-    else
-      # replace existing tag
-      location.href.replace /#.*/, url
-  else if url.startsWith '/'
-    # case href="path from root"
-    domainRoot + url
-  else
-    # case href="path from current location"
-    currentLocation + url
-
-###
  Parse url to get its parts  
 ###
 getLocation = (page) ->
@@ -141,27 +84,8 @@ getLocation = (page) ->
       hash: (page.evaluate ->
         window.location.hash)
 
-###
- Find hrefs on the html page 
-###
-extractUrlsFromPage = (page) ->
-  result = []
-  hrefs = page.content.match /href=['\"]([^'\"]*)['\"]/g
-  if hrefs
-    for href in hrefs
-      # remove the href= 
-      url = href[6..-2]
-      # check if empty
-      if url
-        # ignore css
-        if url[-4..-1] isnt '.css'
-          # make url canonical
-          url = parseURL url, page
-          # save it
-          result.push url
-    result
 
-extractUrlsFromPage2 = (page) ->
+extractUrlsFromPage = (page) ->
   foundURLs = page.evaluate ->
     result = []
     anchors = document.getElementsByTagName 'a'
@@ -170,76 +94,6 @@ extractUrlsFromPage2 = (page) ->
     result
   foundURLs
 
-###
- url regexes to never visit 
-###
-blockList = [
-  /.*ILinkListener.*/
-]
-
-###
- ignore url? 
-###
-isBlockListed = (url) ->
-  for blockRegEx in blockList
-    if url.match blockRegEx
-      console.log "blocked: #{url}"
-      return true
-
-###
- Crawl a site
- DEPRECIATED
-###
-crawlSite = (url, found, finish) ->
-  crawlPage url, found, finish, null, {}
-
-###
- Crawl a page
- DEPRECIATED
-###
-crawlPage = (url, found, finish, currentHost, alreadyCrawled) ->
-  if alreadyCrawled[url]
-    console.log "skipping: #{url}"
-    finish()
-  else
-    alreadyCrawled[url] = true
-    loadPage url, ((page) ->
-      if page
-        location = getLocation page
-        if !currentHost
-          currentHost = location.host
-        if location.host is currentHost
-          console.log "********analyzing #{url}"
-          foundURLs = extractUrlsFromPage2 page
-          if foundURLs and foundURLs.length isnt 0
-            console.log "extracted #{foundURLs.length} URL"
-            
-            i = foundURLs.length - 1
-            helper = () ->
-              if i isnt -1
-                foundURL = foundURLs[i]
-                console.log "Url# #{i+1} -> #{foundURL}"
-                i--
-                if isBlockListed foundURL
-                  console.log "blocked!"
-                  helper()
-                else
-                  helper()
-                  #crawlPage foundURL, found, helper, currentHost, alreadyCrawled
-                  found foundURL
-              else
-                finish()
-            helper()
-          else
-            console.log "found no URLs"
-            finish()
-        else
-          console.log "wrong host: #{location.host}"
-          finish()
-      else
-        console.log "bad url: #{url}"
-        finish()
-    )
 
 ###
  Get URLs on a page
@@ -250,7 +104,7 @@ getURLs = (url, foundCallback, finishCallback) ->
     if page
       console.log "loaded page: #{url}"
       location = getLocation page
-      foundURLs = extractUrlsFromPage2 page
+      foundURLs = extractUrlsFromPage page
       if foundURLs and foundURLs.length isnt 0
         console.log "extracted #{foundURLs.length} URL"
         for foundURL in foundURLs
