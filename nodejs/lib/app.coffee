@@ -62,6 +62,12 @@ the list of urls visted in this crawl
 ###
 alreadyCrawled = null
 
+
+###
+how to name the file in s3 (HASH|URLENCODE)
+###
+filenameFormat = "HASH"
+
 ###
 setup crawl
 ###
@@ -76,6 +82,7 @@ initCrawl = (config) ->
   s3upload.setId config.id
   s3upload.setPasswd config.passwd
   s3upload.setPath path
+  filenameFormat = config.fileNameFormat || filenameFormat
   #reset crawl list
   alreadyCrawled = {}
 
@@ -202,10 +209,13 @@ processURL = (foundURL) ->
       # sched a job to take the snapshot
       # sockets.ui.emit "foundURL", foundURL
       hash = sha1(foundURL)
+      filename = hash
+      if filenameFormat is "URLENCODE"
+        filename = encodeURIComponent(foundURL)
       queue.enqueue
         url: foundURL
         hash: hash
-        form: s3upload.createForm(encodeURIComponent(foundURL))
+        form: s3upload.createForm(filename)
 
 numberOfPhantoms = 0
 jobsCompleted = 0
@@ -227,14 +237,18 @@ sockets =
         sockets.ui.emit "jobs", queue.getJobCount()
         sockets.ui.emit "phantomCount", numberOfPhantoms
         sockets.ui.emit "jobsCompleted", jobsCompleted
+
         socket.on "render", (url) ->
           console.log "<ui> render #{url}"
           hash = sha1(url)
+          filename = hash
+          if filenameFormat is "URLENCODE"
+            filename = encodeURIComponent(url)
           queue.enqueue
             url: url
             type: "snapshot"
             hash: hash
-            form: s3upload.createForm(encodeURIComponent(url))
+            form: s3upload.createForm(filename)
         # start a new crawl
         socket.on "crawl", (config) ->
           console.log "<ui> crawl requested"

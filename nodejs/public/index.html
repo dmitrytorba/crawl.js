@@ -29,6 +29,13 @@
         <label for="path">S3 path for snapshots:</label>
         <input type="text" id="path" required>
     </div>
+    <div class="row">
+        <label for="fileFormat">Filename format:</label>
+        <select id="fileFormat" required>
+            <option value="HASH">SHA1 Hash of the URL</option>
+            <option value="URLENCODE">URL Encoded URL</option>
+        </select>
+    </div>
     <div class="buttons cf">
         <input id="stopButton" type="button" value="Stop"/>
         <input id="startButton" type="submit" value="Start"/>

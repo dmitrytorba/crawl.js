@@ -21,12 +21,14 @@ function init() {
         var s3id = $('#s3id').val();
         var s3passwd = $('#s3passwd').val();
         var s3path = $('#path').val();
+        var fileFormat = $('#fileFormat').val();debugger
         socket.emit("crawl", {
             url:url,
             bucket:s3bucket,
             path:s3path,
             id:s3id,
-            passwd:s3passwd
+            passwd:s3passwd,
+            fileNameFormat: fileFormat
         });
 
         startButton.hide();
