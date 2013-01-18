@@ -8,7 +8,7 @@ if sys.args.length < 2
 
 pushServerUrl = sys.args[1]
 
-maxDispatchesPerLife = 20
+maxDispatchesPerLife = 5
 
 ###
  Loading page
@@ -174,6 +174,7 @@ connect (conn) ->
         , ->
           conn.notify "complete"
           if dispatchCount > maxDispatchesPerLife
+            console.log "SHUTTING DOWN!"
             phantom.exit()
     else
         filename = Math.random().toString(36).substring(2)
@@ -184,6 +185,7 @@ connect (conn) ->
             if snapshotUrl
               conn.notify("complete", request.url, snapshotUrl)
               if dispatchCount > maxDispatchesPerLife
+                console.log "SHUTTING DOWN!"
                 phantom.exit()
             else
               console.log "FAILURE! #{request.url}"
