@@ -22,7 +22,6 @@ loadPage = (url, callback) ->
   page.onError = (msg, trace) ->
     console.log msg
     trace.forEach (item) -> console.log "  ", item.file, ":", item.line
-  page.settings = loadImages: false
   page.open url, (status) ->
     callback (if status is "success" then page else null)
   page
