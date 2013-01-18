@@ -1,0 +1,15 @@
+{
+    "name": "crawl.js",
+    "version": "0.0.1",
+    "dependencies": {
+      "express": "3.x",
+      "ejs": ">= 0.0.1",
+      "coffee-script": "1.3.x",
+      "socket.io": "0.9.x",
+      "knox": "0.4.x",
+      "should": ""
+  },
+  "engines": {
+      "node": "0.6.11"
+  }
+}
