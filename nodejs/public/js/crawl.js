@@ -81,6 +81,11 @@ function init() {
         phantomCount.html(count);
     })
 
+    socket.on('jobsCompleted', function (count) {
+        var jobsCompleted = $('#jobsCompleted');
+        jobsCompleted.html(count);
+    })
+
 }
 
 $(init);

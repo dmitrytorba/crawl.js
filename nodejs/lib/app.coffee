@@ -208,6 +208,7 @@ processURL = (foundURL) ->
         form: s3upload.createForm(encodeURIComponent(foundURL))
 
 numberOfPhantoms = 0
+jobsCompleted = 0
 
 ###
 Socket IO Channels
@@ -225,6 +226,7 @@ sockets =
         console.log "<ui> connected"
         sockets.ui.emit "jobs", queue.getJobCount()
         sockets.ui.emit "phantomCount", numberOfPhantoms
+        sockets.ui.emit "jobsCompleted", jobsCompleted
         socket.on "render", (url) ->
           console.log "<ui> render #{url}"
           hash = sha1(url)
@@ -264,6 +266,8 @@ sockets =
             console.log "<phantom> notify #{response.snapshotUrl}"
             sockets.ui.emit "image", response.snapshotUrl
           queue.wait(phantomWorker)
+          jobsCompleted++
+          sockets.ui.emit "jobsCompleted", jobsCompleted
         # a URL was found during the crawl
         socket.on "found", (response) ->
           processURL response.url

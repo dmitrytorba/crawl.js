@@ -8,6 +8,8 @@ if sys.args.length < 2
 
 pushServerUrl = sys.args[1]
 
+maxDispatchesPerLife = 20
+
 ###
  Loading page
 ###
@@ -156,18 +158,23 @@ class Connection
       @page.evaluate("function(){ notifyFailure('#{message}'); }")
 
 
+dispatchCount = 0
+
 ###
  init
 ###
 connect (conn) ->
   return console.log("connection failure.") unless conn
   conn.onDispatch = (request) ->
+    dispatchCount++
     if request.type is "urls"
       console.log "getting urls from #{request.url}"
       getURLs request.url, (foundURL) ->
           conn.notify "found", foundURL
         , ->
           conn.notify "complete"
+          if dispatchCount > maxDispatchesPerLife
+            phantom.exit()
     else
         filename = Math.random().toString(36).substring(2)
         file = "/tmp/#{filename}.html"
@@ -176,6 +183,8 @@ connect (conn) ->
           uploadFile file, request.form, (snapshotUrl) ->
             if snapshotUrl
               conn.notify("complete", request.url, snapshotUrl)
+              if dispatchCount > maxDispatchesPerLife
+                phantom.exit()
             else
               console.log "FAILURE! #{request.url}"
               conn.notify("failure",  request.url)
