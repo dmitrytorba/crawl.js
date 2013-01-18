@@ -8,8 +8,6 @@ if sys.args.length < 2
 
 pushServerUrl = sys.args[1]
 
-maxDispatchesPerLife = 5
-
 ###
  Loading page
 ###
@@ -34,6 +32,7 @@ renderPage = (url, filename, callback) ->
     setTimeout ->
       fs.write filename, page.content
       callback(filename)
+      page.release()
     , 1000
 
 ###
@@ -119,6 +118,7 @@ getURLs = (url, foundCallback, finishCallback) ->
       console.log "failed load: #{url}, #{page}"
     console.log "**finished**"
     finishCallback()
+    page.release()
     console.log "closed page"
 
 ###
@@ -173,9 +173,6 @@ connect (conn) ->
           conn.notify "found", foundURL
         , ->
           conn.notify "complete"
-          if dispatchCount > maxDispatchesPerLife
-            console.log "SHUTTING DOWN!"
-            phantom.exit()
     else
         filename = Math.random().toString(36).substring(2)
         file = "/tmp/#{filename}.html"
@@ -184,9 +181,6 @@ connect (conn) ->
           uploadFile file, request.form, (snapshotUrl) ->
             if snapshotUrl
               conn.notify("complete", request.url, snapshotUrl)
-              if dispatchCount > maxDispatchesPerLife
-                console.log "SHUTTING DOWN!"
-                phantom.exit()
             else
               console.log "FAILURE! #{request.url}"
               conn.notify("failure",  request.url)
