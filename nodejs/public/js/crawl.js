@@ -21,7 +21,7 @@ function init() {
         var s3id = $('#s3id').val();
         var s3passwd = $('#s3passwd').val();
         var s3path = $('#path').val();
-        var fileFormat = $('#fileFormat').val();debugger
+        var fileFormat = $('#fileFormat').val();
         socket.emit("crawl", {
             url:url,
             bucket:s3bucket,
