@@ -37,6 +37,9 @@ class WorkerQueue extends events.EventEmitter
     @_requests = []
     @emit "jobs", @_requests.length
 
+  getJobCount: () ->
+    @_requests.length
+
 
 
 module.exports = WorkerQueue

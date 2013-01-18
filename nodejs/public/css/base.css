@@ -22,7 +22,7 @@
 #stopButton {
   display: none;
 }
-#jobCountContainer {
+#feedback {
   position: absolute;
   top:0;
 }

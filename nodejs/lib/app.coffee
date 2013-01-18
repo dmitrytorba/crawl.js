@@ -207,6 +207,7 @@ processURL = (foundURL) ->
         hash: hash
         form: s3upload.createForm(encodeURIComponent(foundURL))
 
+numberOfPhantoms = 0
 
 ###
 Socket IO Channels
@@ -222,7 +223,8 @@ sockets =
     io.of("/ui")
       .on "connection", (socket) ->
         console.log "<ui> connected"
-        # TODO
+        sockets.ui.emit "jobs", queue.getJobCount()
+        sockets.ui.emit "phantomCount", numberOfPhantoms
         socket.on "render", (url) ->
           console.log "<ui> render #{url}"
           hash = sha1(url)
@@ -248,6 +250,8 @@ sockets =
     io.of("/phantom")
       .on "connection", (socket) ->
         console.log "<phantom> connected"
+        numberOfPhantoms++
+        sockets.ui.emit "phantomCount", numberOfPhantoms
         phantomWorker = new events.EventEmitter()
         # go do this work 
         phantomWorker.on "dispatch", (req) ->
@@ -267,6 +271,8 @@ sockets =
           queue.wait(phantomWorker)
         socket.on "disconnect", ->
           console.log "<phantom> disconnect"
+          numberOfPhantoms--
+          sockets.ui.emit "phantomCount", numberOfPhantoms
           queue.remove(phantomWorker)
 
 

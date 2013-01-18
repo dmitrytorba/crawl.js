@@ -35,6 +35,15 @@ function init() {
         return false;
     });
 
+    socket.on('connect', function() {
+        var status = $('#status');
+        status.html('Connected');
+    });
+
+    socket.on('disconnect', function() {
+        var status = $('#status');
+        status.html('Disconnected');
+    });
 
     //TODO
     socket.on("image", function (url) {
@@ -66,6 +75,11 @@ function init() {
         var jobsCount = $('#jobsCount');
         jobsCount.html(count);
     });
+
+    socket.on('phantomCount', function (count) {
+        var phantomCount = $('#phantomCount');
+        phantomCount.html(count);
+    })
 
 }
 
