@@ -36,6 +36,13 @@
             <option value="URLENCODE">URL Encoded URL</option>
         </select>
     </div>
+    <div class="row">
+        <label for="bucketStrategy">Bucket strategy:</label>
+        <select id="bucketStrategy" required>
+            <option value="APPEND">Add to existing files (do not delete)</option>
+            <option value="REPLACE">Replace all files in bucket</option>
+        </select>
+    </div>
     <div class="buttons cf">
         <input id="stopButton" type="button" value="Stop"/>
         <input id="startButton" type="submit" value="Start"/>

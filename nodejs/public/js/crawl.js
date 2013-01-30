@@ -22,13 +22,15 @@ function init() {
         var s3passwd = $('#s3passwd').val();
         var s3path = $('#path').val();
         var fileFormat = $('#fileFormat').val();
+        var bucketStrategy = $('#bucketStrategy').val();
         socket.emit("crawl", {
             url:url,
             bucket:s3bucket,
             path:s3path,
             id:s3id,
             passwd:s3passwd,
-            fileNameFormat: fileFormat
+            fileNameFormat: fileFormat,
+            bucketStrategy: bucketStrategy
         });
 
         startButton.hide();

@@ -69,6 +69,11 @@ how to name the file in s3 (HASH|URLENCODE)
 filenameFormat = "HASH"
 
 ###
+delete files in s3 before crawl? (APPEND|REPLACE)
+###
+bucketStrategy = "APPEND"
+
+###
 setup crawl
 ###
 initCrawl = (config) ->
@@ -77,14 +82,17 @@ initCrawl = (config) ->
   console.log "crawl domain: #{urlObj.host}"
   crawlDomain = urlObj.host
   path = config.path || crawlDomain
+  filenameFormat = config.fileNameFormat || filenameFormat
+  bucketStrategy = config.bucketStrategy || bucketStrategy
+  #reset crawl list
+  alreadyCrawled = {}
   # set up s3
   s3upload.setBucket config.bucket
   s3upload.setId config.id
   s3upload.setPasswd config.passwd
   s3upload.setPath path
-  filenameFormat = config.fileNameFormat || filenameFormat
-  #reset crawl list
-  alreadyCrawled = {}
+  if bucketStrategy is "REPLACE"
+    s3upload.clearS3Folder path
 
 ###
 parse url string 
