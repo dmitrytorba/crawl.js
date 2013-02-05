@@ -11,7 +11,11 @@ function notifyFound(url) {
     url: url 
   });
 }
-
+function notifyNeedsSnapshot(url) {
+    socket.emit("needsSnapshot", {
+        url: url
+    });
+}
 function notifyComplete(pageUrl, snapshotUrl) {
   socket.emit("complete", {
     url: pageUrl,

@@ -11,7 +11,7 @@ class WorkerQueue extends events.EventEmitter
     @_workers = []
 
   wait: (worker) ->
-    request = @_requests.shift()
+    request = @_requests.pop()
     @emit "jobs", @_requests.length
     if request
       worker.emit "dispatch", request
@@ -23,7 +23,7 @@ class WorkerQueue extends events.EventEmitter
   remove: (worker) ->
     @_workers = (w for w in @_workers when w isnt worker)
 
-  enqueue: (request) ->
+  enqueue: (request, topPriority) ->
     worker = @_workers.shift()
     if worker
       worker.emit "dispatch", request

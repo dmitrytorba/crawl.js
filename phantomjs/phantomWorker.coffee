@@ -95,17 +95,37 @@ extractUrlsFromPage = (page) ->
     result
   foundURLs
 
+###
+ checks for snapshot markers ( like <meta name="fragment" content="!" /> )
+###
+checkPageForSnapshotMarkers = (page) ->
+  console.log "checking for page markers: #{page}"
+  metaTags = page.evaluate ->
+    result = []
+    metaTags = document.getElementsByTagName 'meta'
+    for metaTag in metaTags
+      name = metaTag.getAttribute "name"
+      content = metaTag.getAttribute "content"
+      result.push name:name, content:content
+    result
+  for metaTag in metaTags
+    console.log "metaTag: #{metaTag.name} -> #{metaTag.content}"
+    if metaTag.name is "fragment" and metaTag.content is "!"
+      console.log "ITS A HIT"
+      return true
 
 ###
  Get URLs on a page
 ###
 getURLs = (url, foundCallback, finishCallback) ->
   console.log "loading page: #{url}"
+  needsSnapshot = false
   loadPage url, (page) ->
     if page
       console.log "loaded page: #{url}"
       location = getLocation page
       foundURLs = extractUrlsFromPage page
+      needsSnapshot = needsSnapshot || checkPageForSnapshotMarkers page
       if foundURLs and foundURLs.length isnt 0
         console.log "extracted #{foundURLs.length} URL"
         for foundURL in foundURLs
@@ -117,7 +137,7 @@ getURLs = (url, foundCallback, finishCallback) ->
     else
       console.log "failed load: #{url}, #{page}"
     console.log "**finished**"
-    finishCallback()
+    finishCallback(needsSnapshot)
     page.release()
     console.log "closed page"
 
@@ -151,6 +171,8 @@ class Connection
   notify: (message) ->
     if message is "found"
       @page.evaluate("function(){ notifyFound('#{arguments[1]}'); }")
+    else if message is "needsSnapshot"
+      @page.evaluate("function(){ notifyNeedsSnapshot('#{arguments[1]}'); }")
     else if message is "complete"
       args = Array.prototype.slice.call(arguments, 1)
       @page.evaluate("function(){ notifyComplete('#{args.join("','")}'); }")
@@ -171,8 +193,12 @@ connect (conn) ->
       console.log "getting urls from #{request.url}"
       getURLs request.url, (foundURL) ->
           conn.notify "found", foundURL
-        , ->
-          conn.notify "complete"
+        , (needsSnapshot) ->
+          console.log "needsSnapshot: #{needsSnapshot}"
+          if needsSnapshot
+            conn.notify "needsSnapshot", request.url
+          else
+            conn.notify "complete"
     else
         filename = Math.random().toString(36).substring(2)
         file = "/tmp/#{filename}.html"

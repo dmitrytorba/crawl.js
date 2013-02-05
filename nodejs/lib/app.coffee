@@ -290,6 +290,21 @@ sockets =
           queue.wait(phantomWorker)
           jobsCompleted++
           sockets.ui.emit "jobsCompleted", jobsCompleted
+        socket.on "needsSnapshot", (response) ->
+          console.log "NEEDS_SNAPSHOT: #{response.url}"
+          if response.url
+            # take a snapshot
+            hash = sha1(response.url)
+            filename = hash
+            if filenameFormat is "URLENCODE"
+              filename = encodeURIComponent(response.url)
+            queue.enqueue
+              url: response.url
+              hash: hash
+              form: s3upload.createForm(filename)
+          queue.wait(phantomWorker)
+          jobsCompleted++
+          sockets.ui.emit "jobsCompleted", jobsCompleted
         # a URL was found during the crawl
         socket.on "found", (response) ->
           processURL response.url
