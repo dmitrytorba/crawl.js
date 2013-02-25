@@ -294,10 +294,10 @@ sockets =
           console.log "NEEDS_SNAPSHOT: #{response.url}"
           if response.url
             # take a snapshot
-            hash = sha1(response.url)
+            hash = sha1(response.url + "#!")
             filename = hash
             if filenameFormat is "URLENCODE"
-              filename = encodeURIComponent(response.url)
+              filename = encodeURIComponent(response.url + "#!")
             queue.enqueue
               url: response.url
               hash: hash
