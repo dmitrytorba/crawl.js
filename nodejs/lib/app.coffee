@@ -276,6 +276,7 @@ sockets =
         numberOfPhantoms++
         sockets.ui.emit "phantomCount", numberOfPhantoms
         phantomWorker = new events.EventEmitter()
+        queue.addWorker phantomWorker
         # go do this work 
         phantomWorker.on "dispatch", (req) ->
           console.log "dispatching worker"

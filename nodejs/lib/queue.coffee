@@ -9,6 +9,7 @@ class WorkerQueue extends events.EventEmitter
   constructor: ->
     @_requests = []
     @_workers = []
+    @phantomWorkers = []
 
   wait: (worker) ->
     console.log "<queue> wait"
@@ -37,8 +38,12 @@ class WorkerQueue extends events.EventEmitter
     else
       console.log "Request Limit Exceeded"
 
+  addWorker: (worker) ->
+    @phantomWorkers.push(worker)
+
   kill: () ->
     @_requests = []
+    @_workers = @phantomWorkers
     @emit "jobs", @_requests.length
 
   getJobCount: () ->
