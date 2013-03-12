@@ -16,6 +16,7 @@ class WorkerQueue extends events.EventEmitter
     if request
       worker.emit "dispatch", request
     else if @maxWorkers > @_workers.length
+      console.log "bad request encountered"
       @_workers.push(worker)
     else
       console.log "Max Workers exeeded"

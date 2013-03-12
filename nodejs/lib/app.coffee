@@ -278,6 +278,7 @@ sockets =
         phantomWorker = new events.EventEmitter()
         # go do this work 
         phantomWorker.on "dispatch", (req) ->
+          console.log "dispatching worker"
           socket.emit "dispatch", req
         # wait for work
         queue.wait(phantomWorker)
