@@ -234,8 +234,7 @@ Socket IO Channels
 io = socketio.listen(server)
 
 io.configure ->
-  io.set "transports", ["xhr-polling"]
-  io.set "polling duration", 10
+  io.set "log level", 1
 
 sockets =
   ui:
