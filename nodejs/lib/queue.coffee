@@ -11,6 +11,7 @@ class WorkerQueue extends events.EventEmitter
     @_workers = []
 
   wait: (worker) ->
+    console.log "<queue> wait"
     request = @_requests.pop()
     @emit "jobs", @_requests.length
     if request
@@ -22,9 +23,11 @@ class WorkerQueue extends events.EventEmitter
       console.log "Max Workers exeeded"
   
   remove: (worker) ->
+    console.log "<queue> remove"
     @_workers = (w for w in @_workers when w isnt worker)
 
   enqueue: (request, topPriority) ->
+    console.log "<queue> enqueue"
     worker = @_workers.shift()
     if worker
       worker.emit "dispatch", request

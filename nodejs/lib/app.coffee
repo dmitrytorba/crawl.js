@@ -284,6 +284,7 @@ sockets =
         queue.wait(phantomWorker)
         # TODO
         socket.on "complete", (response) ->
+          console.log "<phantom> complete"
           if response.snapshotUrl
             console.log "<phantom> notify #{response.snapshotUrl}"
             sockets.ui.emit "image", response.snapshotUrl
@@ -307,8 +308,10 @@ sockets =
           sockets.ui.emit "jobsCompleted", jobsCompleted
         # a URL was found during the crawl
         socket.on "found", (response) ->
+          console.log "<phantom> found #{response.url}"
           processURL response.url
         socket.on "fail", ->
+          console.log "<phantom> fail"
           queue.wait(phantomWorker)
         socket.on "disconnect", ->
           console.log "<phantom> disconnect"
