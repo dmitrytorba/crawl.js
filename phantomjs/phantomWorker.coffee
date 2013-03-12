@@ -138,8 +138,10 @@ getURLs = (url, foundCallback, finishCallback) ->
       console.log "failed load: #{url}, #{page}"
     console.log "**finished**"
     finishCallback(needsSnapshot)
-    page.release()
-    console.log "closed page"
+    setTimeout ( ->
+      page.release()
+      console.log "closed page"
+    ), 1000
 
 ###
  Connecting to socket.IO push server
