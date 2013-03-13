@@ -169,6 +169,7 @@ class Connection
   onDispatch: null
 
   notify: (message) ->
+    console.log "<PHANTWORK>notify: #{message}"
     if message is "found"
       @page.evaluate("function(){ notifyFound('#{arguments[1]}'); }")
     else if message is "needsSnapshot"
