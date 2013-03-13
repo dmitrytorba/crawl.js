@@ -1,7 +1,8 @@
 var socket;
 function init() {
   socket = io.connect("/phantom", {
-      transports: ['websocket']
+      transports: ['xhr-polling'],
+      'polling duration': 10
   });
   socket.on("dispatch", function(params) {
     console.log("dispatch:"+JSON.stringify(params));

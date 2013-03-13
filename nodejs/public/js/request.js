@@ -1,6 +1,9 @@
 var socket;
 function init() {
-  socket = io.connect("/ui");
+  socket = io.connect("/ui", {
+      transports: ['xhr-polling'],
+      'polling duration': 10
+  });
   $('form').submit(function(e) {
     e.preventDefault();
     e.stopPropagation();
