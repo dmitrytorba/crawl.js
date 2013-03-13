@@ -235,6 +235,7 @@ io = socketio.listen(server)
 
 io.configure ->
   io.set "log level", 1
+  io.set "transports", ["websocket"]
 
 sockets =
   ui:

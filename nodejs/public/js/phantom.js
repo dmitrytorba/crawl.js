@@ -1,6 +1,8 @@
 var socket;
 function init() {
-  socket = io.connect("/phantom");
+  socket = io.connect("/phantom", {
+      transports: ['websocket']
+  });
   socket.on("dispatch", function(params) {
     console.log("dispatch:"+JSON.stringify(params));
   });
