@@ -171,14 +171,14 @@ class Connection
   notify: (message) ->
     console.log "<PHANTWORK>notify: #{message}"
     if message is "found"
-      @page.evaluate("function(){ notifyFound('#{arguments[1]}'); }")
+      @page.evaluateJavascript("function(){ notifyFound('#{arguments[1]}'); }")
     else if message is "needsSnapshot"
-      @page.evaluate("function(){ notifyNeedsSnapshot('#{arguments[1]}'); }")
+      @page.evaluateJavascript("function(){ notifyNeedsSnapshot('#{arguments[1]}'); }")
     else if message is "complete"
       args = Array.prototype.slice.call(arguments, 1)
-      @page.evaluate("function(){ notifyComplete('#{args.join("','")}'); }")
+      @page.evaluateJavascript("function(){ notifyComplete('#{args.join("','")}'); }")
     else
-      @page.evaluate("function(){ notifyFailure('#{message}'); }")
+      @page.evaluateJavascript("function(){ notifyFailure('#{message}'); }")
 
 
 dispatchCount = 0
