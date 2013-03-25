@@ -1,9 +1,6 @@
 var socket;
 function init() {
-  socket = io.connect("/phantom", {
-      transports: ['xhr-polling'],
-      'polling duration': 10
-  });
+  socket = io.connect("/phantom");
   socket.on("dispatch", function(params) {
     console.log("dispatch:"+JSON.stringify(params));
   });

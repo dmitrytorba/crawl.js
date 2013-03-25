@@ -235,9 +235,6 @@ io = socketio.listen(server)
 
 io.configure ->
   io.set "log level", 1
-  io.set "transports", ["xhr-polling"]
-  io.set "polling duration", 10
-
 
 sockets =
   ui:
