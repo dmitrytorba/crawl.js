@@ -99,7 +99,7 @@ extractUrlsFromPage = (page) ->
  checks for snapshot markers ( like <meta name="fragment" content="!" /> )
 ###
 checkPageForSnapshotMarkers = (page) ->
-  console.log "checking for page markers: #{page}"
+#  console.log "checking for page markers: #{page}"
   metaTags = page.evaluate ->
     result = []
     metaTags = document.getElementsByTagName 'meta'
@@ -109,9 +109,9 @@ checkPageForSnapshotMarkers = (page) ->
       result.push name:name, content:content
     result
   for metaTag in metaTags
-    console.log "metaTag: #{metaTag.name} -> #{metaTag.content}"
+#    console.log "metaTag: #{metaTag.name} -> #{metaTag.content}"
     if metaTag.name is "fragment" and metaTag.content is "!"
-      console.log "ITS A HIT"
+#      console.log "ITS A HIT"
       return true
 
 ###
@@ -129,7 +129,7 @@ getURLs = (url, foundCallback, finishCallback) ->
       if foundURLs and foundURLs.length isnt 0
         console.log "extracted #{foundURLs.length} URL"
         for foundURL in foundURLs
-          console.log "found: #{foundURL}"
+#          console.log "found: #{foundURL}"
           foundCallback(foundURL)
       else
         console.log "found no URLs"
@@ -169,7 +169,7 @@ class Connection
   onDispatch: null
 
   notify: (message) ->
-    console.log "<PHANTWORK>notify: #{message}"
+#    console.log "<PHANTWORK>notify: #{message}"
     if message is "found"
       @page.evaluateAsync("function(){ notifyFound('#{arguments[1]}'); }")
     else if message is "needsSnapshot"
