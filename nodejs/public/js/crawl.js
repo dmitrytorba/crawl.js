@@ -50,7 +50,8 @@ function init() {
     });
 
     //TODO
-    socket.on("image", function (url) {
+    socket.on("snapshot", function (config) {
+        var url = config.snapshotUrl;
         console.log('URL: ' + url);
         $('<br/>').prependTo($('#images'));
         $('<a>').attr({

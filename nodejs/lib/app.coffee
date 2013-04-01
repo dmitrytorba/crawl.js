@@ -288,7 +288,9 @@ sockets =
           console.log "<phantom> complete"
           if response.snapshotUrl
             console.log "<phantom> notify #{response.snapshotUrl}"
-            sockets.ui.emit "image", response.snapshotUrl
+            sockets.ui.emit "snapshot",
+              snapshotUrl: response.snapshotUrl,
+              originalUrl: response.originalUrl
           queue.wait(phantomWorker)
           jobsCompleted++
           sockets.ui.emit "jobsCompleted", jobsCompleted
