@@ -1,0 +1,1 @@
+phantomjs --load-images=false --cookies-file=/dev/null phantomWorker.coffee 127.0.0.1:3000/phantom.html
