@@ -5,6 +5,16 @@ function init() {
     var stopButton = $('#stopButton');
     var startButton = $('#startButton');
 
+    var addWorker = $('#addWorker');
+    var removeWorker = $('#removeWorker');
+
+    addWorker.click(function () {
+        socket.emit("addWorker");
+    });
+    removeWorker.click(function () {
+        socket.emit("removeWorker");
+    });
+
     stopButton.click(function () {
         socket.emit("kill");
 

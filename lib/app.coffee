@@ -229,6 +229,12 @@ processURL = (foundURL) ->
 numberOfPhantoms = 0
 jobsCompleted = 0
 
+
+###
+PhantomJS process manager
+###
+foreman = new Foreman()
+
 ###
 Socket IO Channels
 ###
@@ -264,6 +270,12 @@ sockets =
           queue.enqueue
             url: config.url
             type: "urls"
+        socket.on "addWorker", ->
+          console.log "<ui> addWorker"
+          foreman.addWorker()
+        socket.on "removeWorker", ->
+          console.log "<ui> removeWorker"
+          foreman.removeWorker()
         socket.on "kill", ->
           console.log "<ui> kill requested"
           queue.kill()
@@ -330,8 +342,3 @@ port = process.env.PORT ? 3000
 server.listen port
 console.log "Express server listening on port %d in %s mode", port, app.settings.env
 
-###
-PhantomJS process manager
-###
-foreman = new Foreman()
-foreman.addWorker()

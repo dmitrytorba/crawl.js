@@ -5,6 +5,7 @@ events = require "events"
 class Foreman extends events.EventEmitter
   port: 3000
   domain: "localhost"
+  workers: []
 
   addWorker: ->
     spawn = require('child_process').spawn
@@ -19,5 +20,13 @@ class Foreman extends events.EventEmitter
 
     phantomjs.on 'close', (code) ->
       console.log('child process exited with code ' + code)
+
+    @workers.push phantomjs
+
+  removeWorker: () ->
+    if @workers.length
+      phantomjs = @workers.pop()
+      phantomjs.kill "SIGHUP"
+
 
 module.exports = Foreman
