@@ -63,27 +63,15 @@ function init() {
     socket.on("snapshot", function (config) {
         var url = config.snapshotUrl;
         console.log('URL: ' + url);
-        $('<br/>').prependTo($('#images'));
+        $('<br/>').prependTo($('#output'));
+        $('<span class="orig-url">' + config.originalUrl + '</span> ').prependTo($('#output'));
         $('<a>').attr({
             'href':url,
             'target':'_blank'
-        }).html(url).prependTo($('#images'));
+        }).html(url).prependTo($('#output'));
         if ($('img').size() > 10) {
             $('img:last-child').remove();
         }
-    });
-
-    //new URL is found during the crawl
-    socket.on("foundURL", function (url) {
-        //TODO
-        console.log('URL: ' + url);
-        $('<br/>').prependTo($('#images'));
-        var link = $('<a>');
-        link.attr({
-            'href':url,
-            'target':'_blank'
-        }).html(url);
-        link.prependTo($('#images'));
     });
 
     socket.on("jobs", function (count) {

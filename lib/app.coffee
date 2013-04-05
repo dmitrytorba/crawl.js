@@ -125,8 +125,8 @@ isBlackListed = (url) ->
 check if url is within our domain
 ###
 isInsideCrawlDomain = (urlObj) ->
-  if urlObj.host isnt crawlDomain
-    console.log "$$$$$$$$$$$$$$$ wrong domain"
+#  if urlObj.host isnt crawlDomain
+#    console.log "$$$$$$$$$$$$$$$ wrong domain"
   urlObj.host is crawlDomain
 
 ###
@@ -300,10 +300,11 @@ sockets =
         socket.on "complete", (response) ->
           console.log "<phantom> complete"
           if response.snapshotUrl
-            console.log "<phantom> notify #{response.snapshotUrl}"
-            sockets.ui.emit "snapshot",
-              snapshotUrl: response.snapshotUrl,
-              originalUrl: response.originalUrl
+            console.log "<phantom> notify #{response.url}: #{response.snapshotUrl}"
+            sockets.ui.emit "snapshot", {
+              snapshotUrl: response.snapshotUrl
+              originalUrl: response.url
+            }
           queue.wait(phantomWorker)
           jobsCompleted++
           sockets.ui.emit "jobsCompleted", jobsCompleted
@@ -324,7 +325,7 @@ sockets =
           sockets.ui.emit "jobsCompleted", jobsCompleted
         # a URL was found during the crawl
         socket.on "found", (response) ->
-          console.log "<phantom> found #{response.url}"
+#          console.log "<phantom> found #{response.url}"
           processURL response.url
         socket.on "fail", ->
           console.log "<phantom> fail"
