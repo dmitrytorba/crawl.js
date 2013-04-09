@@ -170,7 +170,6 @@ class Connection
       args = Array.prototype.slice.call(arguments, 1)
       @page.evaluateAsync("function(){ notifyComplete('#{args.join("','")}'); }")
     else
-      console.log "sending fail message"
       @page.evaluateAsync("function(){ notifyFailure('#{message}'); }")
 
 
@@ -194,15 +193,20 @@ connect (conn) ->
             conn.notify "complete"
     else
         console.log "taking a snapshot of #{request.url}"
-        filename = Math.random().toString(36).substring(2)
-        file = "/tmp/#{filename}.html"
-        renderPage request.url, file, (file) ->
-          uploadFile file, request.form, (snapshotUrl) ->
-            if snapshotUrl
-              conn.notify("complete", request.url, snapshotUrl)
-            else
-              console.log "Upload Failed! #{request.url}"
-              conn.notify("failure", request)
-            fs.remove(file)
+        if not request.form
+          console.log "Snapshot Failed! #{request.url}"
+          conn.notify("failure", request)
+        else
+          filename = Math.random().toString(36).substring(2)
+          file = "/tmp/#{filename}.html"
+          renderPage request.url, file, (file) ->
+            uploadFile file, request.form, (snapshotUrl) ->
+              if snapshotUrl
+                console.log "Upload complete: #{snapshotUrl}"
+                conn.notify("complete", request.url, snapshotUrl)
+              else
+                console.log "Upload Failed! #{request.url}"
+                conn.notify("failure", request)
+              fs.remove(file)
 
 
