@@ -50,7 +50,6 @@ class Crawler extends events.EventEmitter
   initCrawl: (config) ->
     #reset crawl domain
     urlObj = URL.parse config.url
-    console.log "crawl domain: #{urlObj.host}"
     crawlDomain = urlObj.host
     path = config.path || crawlDomain
     filenameFormat = config.fileNameFormat || filenameFormat
@@ -85,7 +84,6 @@ class Crawler extends events.EventEmitter
   isBlackListed: (url) ->
     for blockRegEx in @blackList
       if url.match blockRegEx
-        console.log "blocked: #{url}"
         return true
     return false
 
@@ -181,10 +179,8 @@ class Crawler extends events.EventEmitter
         url: foundURL
         type: "urls"
       # let the UI know a valid URL was found
-      #sockets.ui.emit "foundURL", foundURL
       if @needsSnapshot foundURL
         # sched a job to take the snapshot
-        # sockets.ui.emit "foundURL", foundURL
         hash = @sha1(foundURL)
         filename = hash
         if filenameFormat is "URLENCODE"

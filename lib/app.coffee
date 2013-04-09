@@ -7,10 +7,14 @@ express  = require "express"
 crypto   = require "crypto"
 socketio = require "socket.io"
 http     = require "http"
+util     = require "util"
 s3upload   = require "./s3upload"
 WorkerQueue = require "./queue"
 Crawler  = require "./crawler"
 Foreman  = require "./foreman"
+
+
+port = process.env.PORT ? 3000
 
 app = module.exports = express()
 server = http.createServer(app)
@@ -50,7 +54,7 @@ queue = new WorkerQueue()
 exports.queue = queue
 
 queue.on "jobs", (jobsCount) ->
-  console.log "jobCount: #{jobsCount}"
+  #console.log "jobCount: #{jobsCount}"
   sockets.ui.emit "jobs", jobsCount
 
 numberOfPhantoms = 0
@@ -66,26 +70,27 @@ crawler.setQueue queue
 PhantomJS process manager
 ###
 foreman = new Foreman()
+foreman.setPort port
 
 ###
 Socket IO Channels
 ###
 io = socketio.listen(server)
 
-io.configure ->
-  io.set "log level", 1
+io.configure 'development', ->
+  io.set 'log level', 0
 
 sockets =
   ui:
     io.of("/ui")
       .on "connection", (socket) ->
-        console.log "<ui> connected"
+        util.log "<ui> connected"
         sockets.ui.emit "jobs", queue.getJobCount()
         sockets.ui.emit "phantomCount", numberOfPhantoms
         sockets.ui.emit "jobsCompleted", jobsCompleted
 
         socket.on "render", (url) ->
-          console.log "<ui> render #{url}"
+          #console.log "<ui> render #{url}"
           hash = sha1(url)
           filename = hash
           if crawler.filenameFormat is "URLENCODE"
@@ -97,42 +102,40 @@ sockets =
             form: s3upload.createForm(filename)
         # start a new crawl
         socket.on "crawl", (config) ->
-          console.log "<ui> crawl requested"
+          #console.log "<ui> crawl requested"
           crawler.initCrawl config
           queue.enqueue
             url: config.url
             type: "urls"
         socket.on "addWorker", ->
-          console.log "<ui> addWorker"
+          #console.log "<ui> addWorker"
           foreman.addWorker()
         socket.on "removeWorker", ->
-          console.log "<ui> removeWorker"
+          #console.log "<ui> removeWorker"
           foreman.removeWorker()
         socket.on "kill", ->
-          console.log "<ui> kill requested"
+          #console.log "<ui> kill requested"
           queue.kill()
         socket.on "disconnect", ->
-          console.log "<ui> disconnected"
+          util.log "<ui> disconnected"
 
   render:
     io.of("/phantom")
       .on "connection", (socket) ->
-        console.log "<phantom> connected"
+        #util.log "<phantom> connected"
         numberOfPhantoms++
         sockets.ui.emit "phantomCount", numberOfPhantoms
         phantomWorker = new events.EventEmitter()
         queue.addWorker phantomWorker
         # go do this work 
         phantomWorker.on "dispatch", (req) ->
-          console.log "dispatching worker"
           socket.emit "dispatch", req
         # wait for work
         queue.wait(phantomWorker)
         # TODO
         socket.on "complete", (response) ->
-          console.log "<phantom> complete"
+          #console.log "<phantom> complete"
           if response.snapshotUrl
-            console.log "<phantom> notify #{response.url}: #{response.snapshotUrl}"
             sockets.ui.emit "snapshot", {
               snapshotUrl: response.snapshotUrl
               originalUrl: response.url
@@ -141,7 +144,6 @@ sockets =
           jobsCompleted++
           sockets.ui.emit "jobsCompleted", jobsCompleted
         socket.on "needsSnapshot", (response) ->
-          console.log "NEEDS_SNAPSHOT: #{response.url}"
           if response.url
             # take a snapshot
             hash = sha1(response.url + "#!")
@@ -157,13 +159,13 @@ sockets =
           sockets.ui.emit "jobsCompleted", jobsCompleted
         # a URL was found during the crawl
         socket.on "found", (response) ->
-          console.log "<phantom> found #{response.url}"
           crawler.processURL response.url
-        socket.on "fail", ->
-          console.log "<phantom> fail"
+        socket.on "failure", (request) ->
+          util.log "<phantom> failed, will try later"
           queue.wait(phantomWorker)
+          queue.enqueue(request)
         socket.on "disconnect", ->
-          console.log "<phantom> disconnect"
+          util.log "<phantom> disconnect"
           numberOfPhantoms--
           sockets.ui.emit "phantomCount", numberOfPhantoms
           queue.remove(phantomWorker)
@@ -171,6 +173,5 @@ sockets =
 ###
 Start server
 ###
-port = process.env.PORT ? 3000
 server.listen port
-console.log "Express server listening on port %d in %s mode", port, app.settings.env
+util.log "Express server listening on port #{port} in #{app.settings.env} mode"

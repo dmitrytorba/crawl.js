@@ -26,7 +26,7 @@ loadPage = (url, callback) ->
  Render and upload page image
 ###
 renderPage = (url, filename, callback) ->
-  console.log "rendering #{url} to #{filename} ..."
+  #console.log "rendering #{url} to #{filename} ..."
   loadPage url, (page) ->
     return callback(null) unless page
     setTimeout ->
@@ -39,7 +39,7 @@ renderPage = (url, filename, callback) ->
  Upload file using form
 ###
 uploadFile = (file, form, callback) ->
-  console.log "uploading file #{file}..."
+  #console.log "uploading file #{file}..."
   page = webpage.create()
   html = "<html><body>"
   html += "<form action=\"#{form.action}\" method=\"post\" enctype=\"multipart/form-data\">"
@@ -109,37 +109,30 @@ checkPageForSnapshotMarkers = (page) ->
       result.push name:name, content:content
     result
   for metaTag in metaTags
-#    console.log "metaTag: #{metaTag.name} -> #{metaTag.content}"
     if metaTag.name is "fragment" and metaTag.content is "!"
-#      console.log "ITS A HIT"
       return true
 
 ###
  Get URLs on a page
 ###
 getURLs = (url, foundCallback, finishCallback) ->
-  console.log "loading page: #{url}"
   needsSnapshot = false
   loadPage url, (page) ->
     if page
-      console.log "loaded page: #{url}"
       location = getLocation page
       foundURLs = extractUrlsFromPage page
       needsSnapshot = needsSnapshot || checkPageForSnapshotMarkers page
       if foundURLs and foundURLs.length isnt 0
         console.log "extracted #{foundURLs.length} URL"
         for foundURL in foundURLs
-#          console.log "found: #{foundURL}"
           foundCallback(foundURL)
       else
         console.log "found no URLs"
       page.close()
     else
       console.log "failed load: #{url}, #{page}"
-    console.log "**finished**"
     finishCallback(needsSnapshot)
     page.close()
-    console.log "closed page"
 
 ###
  Connecting to socket.IO push server
@@ -159,7 +152,7 @@ connect = (callback) ->
 class Connection
   constructor: (@page) ->
     page.onConsoleMessage = (msg) =>
-      console.log msg
+      #console.log msg
       return unless msg.indexOf "dispatch:" is 0
       try
         request = JSON.parse(msg.substring(9))
@@ -169,7 +162,6 @@ class Connection
   onDispatch: null
 
   notify: (message) ->
-#    console.log "<PHANTWORK>notify: #{message}"
     if message is "found"
       @page.evaluateAsync("function(){ notifyFound('#{arguments[1]}'); }")
     else if message is "needsSnapshot"
@@ -178,6 +170,7 @@ class Connection
       args = Array.prototype.slice.call(arguments, 1)
       @page.evaluateAsync("function(){ notifyComplete('#{args.join("','")}'); }")
     else
+      console.log "sending fail message"
       @page.evaluateAsync("function(){ notifyFailure('#{message}'); }")
 
 
@@ -195,22 +188,21 @@ connect (conn) ->
       getURLs request.url, (foundURL) ->
           conn.notify "found", foundURL
         , (needsSnapshot) ->
-          console.log "needsSnapshot: #{needsSnapshot}"
           if needsSnapshot
             conn.notify "needsSnapshot", request.url
           else
             conn.notify "complete"
     else
+        console.log "taking a snapshot of #{request.url}"
         filename = Math.random().toString(36).substring(2)
         file = "/tmp/#{filename}.html"
         renderPage request.url, file, (file) ->
-          console.log "file #{file}"
           uploadFile file, request.form, (snapshotUrl) ->
             if snapshotUrl
               conn.notify("complete", request.url, snapshotUrl)
             else
-              console.log "FAILURE! #{request.url}"
-              conn.notify("failure",  request.url)
+              console.log "Upload Failed! #{request.url}"
+              conn.notify("failure", request)
             fs.remove(file)
 
 

@@ -12,13 +12,13 @@ class WorkerQueue extends events.EventEmitter
     @phantomWorkers = []
 
   wait: (worker) ->
-    console.log "<queue> wait"
+    #console.log "<queue> wait"
     request = @_requests.shift()
     @emit "jobs", @_requests.length
     if request
       worker.emit "dispatch", request
     else if @maxWorkers > @_workers.length
-      console.log "bad request encountered"
+      # wait for request
       @_workers.push(worker)
     else
       console.log "Max Workers exeeded"
@@ -28,7 +28,7 @@ class WorkerQueue extends events.EventEmitter
     @_workers = (w for w in @_workers when w isnt worker)
 
   enqueue: (request, topPriority) ->
-    console.log "<queue> enqueue"
+    #console.log "<queue> enqueue"
     worker = @_workers.shift()
     if worker
       worker.emit "dispatch", request

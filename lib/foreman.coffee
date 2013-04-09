@@ -1,4 +1,6 @@
-events = require "events"
+events   = require "events"
+util     = require "util"
+spawn    = require('child_process').spawn
 ###
  Foreman
 ###
@@ -7,21 +9,24 @@ class Foreman extends events.EventEmitter
   domain: "localhost"
   workers: []
 
-  addWorker: ->
-    spawn = require('child_process').spawn
+  setPort: (port) ->
+    @port = port
 
+  addWorker: ->
     phantomjs = spawn('bin/phantomjs', ['--load-images=false', '--cookies-file=/dev/null', 'phantomjs/phantomWorker.coffee', "http://#{@domain}:#{@port}/phantom.html"]);
 
+    phantomjs.id = @workers.length
+
+    @workers[phantomjs.id] = phantomjs
+
     phantomjs.stdout.on 'data', (data) ->
-      console.log('stdout: ' + data)
+      util.log("[phantom-#{phantomjs.id}]: #{data}")
 
     phantomjs.stderr.on 'data', (data) ->
-      console.log('stderr: ' + data)
+      util.log("[phantom-#{phantomjs.id}]: #{data}")
 
     phantomjs.on 'close', (code) ->
-      console.log('child process exited with code ' + code)
-
-    @workers.push phantomjs
+      util.log("[phantom-#{phantomjs.id}]: exited with code #{code}")
 
   removeWorker: () ->
     if @workers.length

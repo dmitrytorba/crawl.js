@@ -53,7 +53,6 @@ clearS3Folder = (path, done) ->
   )
 
 setPath = (path) ->
-  console.log "setting path: #{config.upload}"
   # set upload folder
   config.upload.path = path + "/"
 
