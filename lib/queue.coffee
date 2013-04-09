@@ -13,7 +13,7 @@ class WorkerQueue extends events.EventEmitter
 
   wait: (worker) ->
     console.log "<queue> wait"
-    request = @_requests.pop()
+    request = @_requests.shift()
     @emit "jobs", @_requests.length
     if request
       worker.emit "dispatch", request
