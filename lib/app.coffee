@@ -115,6 +115,7 @@ sockets =
           foreman.removeWorker()
         socket.on "kill", ->
           #console.log "<ui> kill requested"
+          crawler.killCrawl()
           queue.kill()
         socket.on "disconnect", ->
           util.log "<ui> disconnected"

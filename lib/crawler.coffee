@@ -63,6 +63,15 @@ class Crawler extends events.EventEmitter
       s3upload.clearS3Folder path
 
   ###
+  setup crawl
+  ###
+  killCrawl: () ->
+    #reset crawl domain
+    crawlDomain = ""
+    #reset crawl list
+    alreadyCrawled = {}
+
+  ###
   parse url string
   ###
   parseURL: (urlStr) ->
@@ -173,6 +182,7 @@ class Crawler extends events.EventEmitter
     # clean up the URL
     foundURL = @rewriteURL foundURL
     # check if OK to continue crawl on this URL
+    console.log "processing: #{foundURL}"
     if @okToCrawl foundURL
       # schedule a worker to crawl this URL
       @queue.enqueue
