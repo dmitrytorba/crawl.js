@@ -2,17 +2,19 @@
 app.coffee
 ###
 
-events   = require "events"
-express  = require "express"
-crypto   = require "crypto"
-socketio = require "socket.io"
-http     = require "http"
-util     = require "util"
-s3upload   = require "./s3upload"
-WorkerQueue = require "./queue"
-Crawler  = require "./crawler"
-Foreman  = require "./foreman"
-
+events        = require "events"
+express       = require "express"
+crypto        = require "crypto"
+socketio      = require "socket.io"
+http          = require "http"
+util          = require "util"
+passport      = require "passport"
+LocalStategy  = (require "passport-local").Strategy
+User          = require "./user"
+s3upload      = require "./s3upload"
+WorkerQueue   = require "./queue"
+Crawler       = require "./crawler"
+Foreman       = require "./foreman"
 
 port = process.env.PORT ? 3000
 
@@ -20,13 +22,45 @@ app = module.exports = express()
 server = http.createServer(app)
 
 ###
+Passport
+###
+passport.serializeUser (user, done) ->
+  done null, user.id
+
+passport.deserializeUser (id, done) ->
+  User.findById id, (err, user) ->
+    done err, user
+
+passport.use new LocalStategy (username, password, done) ->
+  User.findOne
+    username: username,
+      (err, user) ->
+        if err
+          return done err
+        if not user
+          return done null, false, message: "unknown user: #{username}"
+        user.comparePassword password, (err, isMatch) ->
+          if err
+            return done err
+          if isMatch
+            return done null, user
+          else
+            return done null, false, message: "invalid password"
+
+
+###
 Express server configure
 ###
 app.configure ->
   app.set "views", __dirname + "/../views"
   app.set "view engine", "ejs"
+  app.engine "ejs", require "ejs-locals"
+  app.use express.cookieParser()
   app.use express.bodyParser()
   app.use express.methodOverride()
+  app.use express.session secret: "keyboard cat"
+  app.use passport.initialize()
+  app.use passport.session()
   app.use app.router
   app.use express.static(__dirname + "/../public")
 
@@ -39,6 +73,36 @@ app.configure "development", ->
 app.configure "production", ->
   app.use express.errorHandler()
 
+
+ensureAuthenticated = (req, res, next) ->
+  if req.isAuthenticated()
+    return next()
+  res.redirect "/login"
+
+app.get "/", (req, res) ->
+  console.log "found: #{req.user}"
+  res.render "index", user: req.user
+
+app.get "/account", (req, res) ->
+  res.render "account", user: req.user
+
+app.get "/login", (req, res) ->
+  res.render "login", user: req.user
+
+app.post "/login", (req, res, next) ->
+  passport.authenticate("local", (err, user, info) ->
+    if err
+      return next err
+    if not user
+      return res.redirect 'login'
+    req.login user, (err) ->
+      if err then return next err
+      return res.redirect "/"
+  ) req, res, next
+
+app.get "/logout", (req,res) ->
+  req.logout()
+  res.redirect "/"
 
 ###
 SHA1 Hash Utility Function
