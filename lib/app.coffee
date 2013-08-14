@@ -73,15 +73,16 @@ app.configure "development", ->
 app.configure "production", ->
   app.use express.errorHandler()
 
-
 ensureAuthenticated = (req, res, next) ->
   if req.isAuthenticated()
     return next()
   res.redirect "/login"
 
 app.get "/", (req, res) ->
-  console.log "found: #{req.user}"
-  res.render "index", user: req.user
+  if req.isAuthenticated()
+    res.render "index", user: req.user
+  else
+    res.redirect "/login"
 
 app.get "/account", (req, res) ->
   res.render "account", user: req.user
@@ -135,6 +136,7 @@ PhantomJS process manager
 ###
 foreman = new Foreman()
 foreman.setPort port
+foreman.setDomain "localhost"
 
 ###
 Socket IO Channels

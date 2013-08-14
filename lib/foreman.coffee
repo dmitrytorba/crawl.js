@@ -12,6 +12,9 @@ class Foreman extends events.EventEmitter
   setPort: (port) ->
     @port = port
 
+  setDomain: (domain) ->
+    @domain = domain
+
   addWorker: ->
     phantomjs = spawn('bin/phantomjs', ['--load-images=false', '--cookies-file=/dev/null', 'phantomjs/phantomWorker.coffee', "http://#{@domain}:#{@port}/phantom.html"]);
 
