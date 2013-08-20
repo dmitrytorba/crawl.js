@@ -3,8 +3,10 @@ db.coffee
 ###
 
 bcrypt    = require "bcrypt"
-mongoose  = require "./db"
+db        = require "./db"
 mongoose  = require "mongoose"
+
+SALT_WORK_FACTOR = 10
 
 userSchema = mongoose.Schema(
   username:
@@ -13,7 +15,7 @@ userSchema = mongoose.Schema(
     unique:   true
   email:
     type:     String
-    required: true
+    required: false
     unique:   true
   password:
     type:     String
@@ -42,16 +44,3 @@ userSchema.methods.comparePassword = (candidatePassword, cb) ->
 User = mongoose.model "User", userSchema
 
 module.exports = User
-
-###
-user = new User(
-  username: "bob"
-  email:    "bob@example.com"
-  password: "password"
-)
-user.save (err) ->
-  if err
-    console.log err
-  else
-    console.log "user #{user.username} saved"
-###

@@ -4,7 +4,6 @@ db.coffee
 
 mongoose  = require "mongoose"
 
-SALT_WORK_FACTOR = 10
 
 ###
 MongoDB configure
