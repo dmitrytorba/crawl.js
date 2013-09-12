@@ -5,7 +5,7 @@ User = require "./user"
 
 if process.argv.length < 4
   console.log "Usage: node createUser.js username password"
-  return
+  process.exit()
 
 username = process.argv[2]
 password = process.argv[3]

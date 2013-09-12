@@ -5,13 +5,21 @@ CrawlJS is a PhantomJS site crawler that takes HTML
 snapshots and stores them to S3.
 
 ## Running Locally
-1. Install NodeJS and PhantomJS
+1. Install NodeJS, PhantomJS, and MongoDB
 
-2. Run
+2. Add a user
 
-        node app.js
+    node createUser.js username password
 
-3. Navigate browser to http://localhost:3000/ to control the crawler
+3. Run MongoDB
+
+    sudo mongod
+
+4. Run the app
+
+    node app.js
+
+5. Login at http://localhost:3000/ to control the crawler
 
 
 ## Running Tests
