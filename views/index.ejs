@@ -44,21 +44,6 @@
             <input id="startButton" type="submit" value="Start"/>
         </div>
     </form>
-    <div id="feedback">
-        <div id="statusContainer">
-            Current Status: <span id="status"></span>
-        </div>
-        <div>
-            PhantomJS nodes: <span id="phantomCount"></span>
-        </div>
-        <div id="jobCountContainer">
-            Job Queue: <span id="jobsCount"></span>
-        </div>
-        <div>
-            Jobs Completed: <span id="jobsCompleted"></span>
-        </div>
-        <button id="addWorker">Add Worker</button>
-        <button id="removeWorker">Remove Worker</button>
-    </div>
+    <% include feedback %>
     <div id="output"></div>
 <% } %>
