@@ -8,6 +8,15 @@ class Foreman extends events.EventEmitter
   port: 3000
   domain: "localhost"
   workers: []
+  supportedPlatforms: [ "darwin", "linux"]
+  currentPlatform: ""
+
+  constructor: () ->
+    if -1 < @supportedPlatforms.indexOf process.platform
+      @currentPlatform = process.platform
+    else
+      console.log "#{process.platform} is not supported"
+      process.exit()
 
   setPort: (port) ->
     @port = port
@@ -16,7 +25,7 @@ class Foreman extends events.EventEmitter
     @domain = domain
 
   addWorker: ->
-    phantomjs = spawn('bin/phantomjs', ['--load-images=false', '--cookies-file=/dev/null', 'phantomjs/phantomWorker.coffee', "http://#{@domain}:#{@port}/phantom.html"]);
+    phantomjs = spawn("bin/#{@currentPlatform}/phantomjs", ['--load-images=false', '--cookies-file=/dev/null', 'phantomjs/phantomWorker.coffee', "http://#{@domain}:#{@port}/phantom.html"]);
 
     phantomjs.id = @workers.length
 
