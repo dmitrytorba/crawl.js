@@ -1,5 +1,5 @@
 ###
-db.coffee
+user.coffee
 ###
 
 bcrypt    = require "bcrypt"
@@ -16,7 +16,7 @@ userSchema = mongoose.Schema(
   email:
     type:     String
     required: false
-    unique:   true
+    unique:   false
   password:
     type:     String
     required: true
