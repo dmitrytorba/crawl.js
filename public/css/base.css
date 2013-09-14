@@ -1,16 +1,21 @@
-#mainForm {
+form {
   margin: 0 auto;
   width: 790px;
   font-size: 20px;
   margin-top: 20px;
 }
-#mainForm input[type=text],
-#mainForm input[type=password]{
+input[type=text],
+input[type=password],
+select {
   height: 30px;
   width: 790px;
   font-size: 20px;
 }
-#mainForm .row {
+select {
+  height: 50px;
+  padding: 8px;
+}
+.row {
   margin-top: 10px;
 }
 .buttons input {    
@@ -31,4 +36,20 @@
 }
 .menu {
     float:right;
+}
+.storagePanel {
+    background: #eee;
+    padding: 10px;
+    position: fixed;
+    width: 920px;
+    top: 10px;
+    left: 50%;
+    margin-left: -460px; /* Half of the width */
+    display: none;
+}
+.storagePanel button {
+    float:right;
+    height: 35px;
+    font-size: 20px;
+    margin: 20px 10px;
 }

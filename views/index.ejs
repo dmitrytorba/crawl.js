@@ -7,7 +7,13 @@
             <label for="url">URL where to start the crawl:</label>
             <input type="text" id="url" required>
         </div>
-        <% include s3bucket %>
+        <div class="row">
+            <label for="storage">Storage:</label>
+            <select id="storage" >
+                <option value="ADD">Add new storage...</option>
+            </select>
+        </div>
+
         <div class="row">
             <label for="bucketStrategy">Bucket strategy:</label>
             <select id="bucketStrategy" required>
@@ -22,4 +28,7 @@
     </form>
     <% include feedback %>
     <div id="output"></div>
+    <div class="storagePanel">
+        <% include s3bucket %>
+    </div>
 <% } %>

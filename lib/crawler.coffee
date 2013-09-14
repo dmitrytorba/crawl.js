@@ -1,7 +1,8 @@
 events    = require "events"
 URL       = require "url"
-crypto   = require "crypto"
+crypto    = require "crypto"
 s3upload  = require "./s3upload"
+Storage   = require "./storage"
 ###
  Crawler
 ###
@@ -52,13 +53,19 @@ class Crawler extends events.EventEmitter
     urlObj = URL.parse config.url
     crawlDomain = urlObj.host
     path = config.path || crawlDomain
-    filenameFormat = config.fileNameFormat || filenameFormat
     bucketStrategy = config.bucketStrategy || bucketStrategy
-    # set up s3
-    s3upload.setBucket config.bucket
-    s3upload.setId config.id
-    s3upload.setPasswd config.passwd
-    s3upload.setPath path
+
+    Storage.findOne(
+      name: config.storage,
+      (err, storage) ->
+        console.log "storage: #{storage}"
+        s3upload.setBucket storage.location
+        s3upload.setId storage.key
+        s3upload.setPasswd storage.secret
+        s3upload.setPath storage.path
+        filenameFormat = storage.format || filenameFormat
+    )
+
     if bucketStrategy is "REPLACE"
       s3upload.clearS3Folder path
 
@@ -190,6 +197,7 @@ class Crawler extends events.EventEmitter
         type: "urls"
       # let the UI know a valid URL was found
       if @needsSnapshot foundURL
+        console.log "$$$$$$$ needsSnapshot=true #{foundURL}"
         # sched a job to take the snapshot
         hash = @sha1(foundURL)
         filename = hash

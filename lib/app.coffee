@@ -11,6 +11,7 @@ util          = require "util"
 passport      = require "passport"
 LocalStategy  = (require "passport-local").Strategy
 User          = require "./user"
+Storage       = require "./storage"
 s3upload      = require "./s3upload"
 WorkerQueue   = require "./queue"
 Crawler       = require "./crawler"
@@ -139,6 +140,32 @@ foreman.setPort port
 foreman.setDomain "localhost"
 
 ###
+Storage
+###
+addNewStorage = (config) ->
+  storage = new Storage(
+    name: config.name
+    type: 's3'
+    location: config.bucket
+    path: config.path
+    key: config.id
+    secret: config.passwd
+    format: config.fileNameFormat
+  )
+  storage.save (err) ->
+    if err
+      console.log err
+    else
+      console.log "storage #{storage.name} saved"
+      sockets.ui.emit "storages", [ name: storage.name ]
+
+getStorages = () ->
+  Storage.find({}, 'name', (err, storages) ->
+    #console.log "storages: #{storages}"
+    sockets.ui.emit "storages", storages
+  )
+
+###
 Socket IO Channels
 ###
 io = socketio.listen(server)
@@ -154,6 +181,7 @@ sockets =
         sockets.ui.emit "jobs", queue.getJobCount()
         sockets.ui.emit "phantomCount", numberOfPhantoms
         sockets.ui.emit "jobsCompleted", jobsCompleted
+        getStorages()
 
         socket.on "render", (url) ->
           #console.log "<ui> render #{url}"
@@ -166,6 +194,9 @@ sockets =
             type: "snapshot"
             hash: hash
             form: s3upload.createForm(filename)
+        socket.on "addStorage", (config) ->
+          #console.log "<ui> addStorage requested"
+          addNewStorage config
         # start a new crawl
         socket.on "crawl", (config) ->
           #console.log "<ui> crawl requested"
