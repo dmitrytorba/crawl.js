@@ -125,7 +125,7 @@ var initView = function() {
         }
     });
 
-    $('form').submit(function (e) {
+    $('form#mainForm').submit(function (e) {
         e.preventDefault();
         e.stopPropagation();
         var url = $('#url').val();
