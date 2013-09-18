@@ -19,7 +19,9 @@ loadPage = (url, callback) ->
     console.log msg
     trace.forEach (item) -> console.log "  ", item.file, ":", item.line
   page.open url, (status) ->
-    callback (if status is "success" then page else null)
+    setTimeout ->
+      callback (if status is "success" then page else null)
+    , 2000
   page
 
 ###
