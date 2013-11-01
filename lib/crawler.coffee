@@ -58,7 +58,6 @@ class Crawler extends events.EventEmitter
     Storage.findOne(
       name: config.storage,
       (err, storage) ->
-        console.log "storage: #{storage}"
         s3upload.setBucket storage.location
         s3upload.setId storage.key
         s3upload.setPasswd storage.secret

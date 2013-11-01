@@ -50,6 +50,7 @@ uploadFile = (file, form, callback) ->
   html += "<input type=\"file\" name=\"file\" >"
   html += "</form></body></html>"
   page.content = html
+  # @todo crashed here once, TypeError: incompatible type of argument(s) in call to _uploadFile(); candidates were _uploadFile(QString,QStringList)
   page.uploadFile("input[name=file]", file)
   page.onLoadFinished = (status) ->
     url = page.evaluate( -> location.href )
@@ -154,7 +155,7 @@ connect = (callback) ->
 class Connection
   constructor: (@page) ->
     page.onConsoleMessage = (msg) =>
-      #console.log msg
+      console.log msg
       return unless msg.indexOf "dispatch:" is 0
       try
         request = JSON.parse(msg.substring(9))
