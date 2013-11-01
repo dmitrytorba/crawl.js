@@ -68,9 +68,6 @@ class Crawler extends events.EventEmitter
     if bucketStrategy is "REPLACE"
       s3upload.clearS3Folder path
 
-  ###
-  setup crawl
-  ###
   killCrawl: () ->
     #reset crawl domain
     crawlDomain = ""
@@ -87,6 +84,7 @@ class Crawler extends events.EventEmitter
 
   ###
    url regexes to never visit
+    @todo move to config
   ###
   blackList: [
     /.*ILinkListener.*/,
@@ -167,6 +165,7 @@ class Crawler extends events.EventEmitter
 
   ###
    url regexes to snapshot
+    @todo move to config
   ###
   snapshotList: [
     /.*#!.*/
