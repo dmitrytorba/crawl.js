@@ -1,21 +1,13 @@
 events    = require "events"
 URL       = require "url"
 crypto    = require "crypto"
+brain     = require "./brain"
 s3upload  = require "./s3upload"
 Storage   = require "./storage"
 ###
  Crawler
 ###
 class Crawler extends events.EventEmitter
-  ###
-  the crawl is limited to this domain
-  ###
-  crawlDomain = null
-
-  ###
-  the list of urls visted in this crawl
-  ###
-  alreadyCrawled = null
 
   ###
   how to name the file in s3 (HASH|URLENCODE)
@@ -29,9 +21,8 @@ class Crawler extends events.EventEmitter
 
   constructor: (config) ->
     #reset crawl domain
-    crawlDomain = ""
+    brain.setCrawlDomain ""
     #reset crawl list
-    alreadyCrawled = {}
     if config
       @initCrawl(config)
 
@@ -44,15 +35,13 @@ class Crawler extends events.EventEmitter
   sha1: (str) ->
     crypto.createHash('sha1').update(str).digest('hex')
 
-
   ###
   setup crawl
   ###
   initCrawl: (config) ->
-    #reset crawl domain
     urlObj = URL.parse config.url
-    crawlDomain = urlObj.host
-    path = config.path || crawlDomain
+    brain.setCrawlDomain urlObj.host
+    path = config.path || urlObj.host
     bucketStrategy = config.bucketStrategy || bucketStrategy
 
     Storage.findOne(
@@ -70,9 +59,9 @@ class Crawler extends events.EventEmitter
 
   killCrawl: () ->
     #reset crawl domain
-    crawlDomain = ""
+    brain.setCrawlDomain = ""
     #reset crawl list
-    alreadyCrawled = {}
+    brain.resetVisitedDomains()
 
   ###
   parse url string
@@ -103,37 +92,38 @@ class Crawler extends events.EventEmitter
   ###
   check if url is within our domain
   ###
-  isInsideCrawlDomain: (urlObj) ->
+  isInsideCrawlDomain: (urlObj, callback) ->
     #  if urlObj.host isnt crawlDomain
     #    console.log "$$$$$$$$$$$$$$$ wrong domain"
-    urlObj.host is crawlDomain
+    scope = @
+    brain.getCrawlDomain (crawlDomain) ->
+      if urlObj.host is crawlDomain
+        callback.call scope
 
   ###
   check if url has been crawled this pass
   ###
-  isAlreadyCrawled: (url) ->
-    if !alreadyCrawled[url]
-      alreadyCrawled[url] = true
-      false
-    else
-      #console.log "$$$$$$$$$$$$ already crawled: #{url}"
-      true
+  notAlreadyCrawled: (url, callback, scope) ->
+    scope = @
+    brain.isVisitedUrl url, (isVisited)->
+      if not isVisited
+        brain.addVisitedUrl url
+        callback.call scope
 
   ###
   run checks on the url
   ###
-  okToCrawl: (url) ->
+  okToCrawl: (url, callback) ->
+    scope = @
     # make sure valid url
     urlObj = @parseURL url
     # check if on blacklist
     if !(@isBlackListed url)
       # check if outside of crawl domain
-      if @isInsideCrawlDomain urlObj
+      @isInsideCrawlDomain urlObj, ->
         # check if already crawled
-        if !(@isAlreadyCrawled url)
-          return true
-    #failed, do not crawl
-    return false
+        @notAlreadyCrawled url, ->
+          callback.call scope
 
   ###
   parts of the url to replace-rewrite
@@ -188,7 +178,8 @@ class Crawler extends events.EventEmitter
     foundURL = @rewriteURL foundURL
     # check if OK to continue crawl on this URL
     console.log "processing: #{foundURL}"
-    if @okToCrawl foundURL
+
+    @okToCrawl foundURL, ->
       # schedule a worker to crawl this URL
       @queue.enqueue
         url: foundURL
