@@ -173,7 +173,7 @@ class Connection
       args = Array.prototype.slice.call(arguments, 1)
       @page.evaluateAsync("function(){ notifyComplete('#{args.join("','")}'); }")
     else
-      @page.evaluateAsync("function(){ notifyFailure('#{message}'); }")
+      @page.evaluateAsync("function(){ notifyFailure('#{arguments[1]}'); }")
 
 
 dispatchCount = 0

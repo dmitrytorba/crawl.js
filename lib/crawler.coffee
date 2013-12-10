@@ -20,9 +20,6 @@ class Crawler extends events.EventEmitter
   bucketStrategy = "APPEND"
 
   constructor: (config) ->
-    #reset crawl domain
-    brain.setCrawlDomain ""
-    #reset crawl list
     if config
       @initCrawl(config)
 
@@ -59,7 +56,7 @@ class Crawler extends events.EventEmitter
 
   killCrawl: () ->
     #reset crawl domain
-    brain.setCrawlDomain = ""
+    brain.setCrawlDomain ""
     #reset crawl list
     brain.resetVisitedDomains()
 

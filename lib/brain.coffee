@@ -25,7 +25,7 @@ class Brain extends events.EventEmitter
         @redisClient.hset "visited-url", url, "{}"
 
     isVisitedUrl: (url, callback) ->
-        @redisClient.hexists url, (err, reply) ->
+        @redisClient.hexists "visited-url", url, (err, reply) ->
             callback(reply)
 
     resetVisitedDomains: ->
