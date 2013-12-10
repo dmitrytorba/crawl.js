@@ -25,7 +25,7 @@ class Foreman extends events.EventEmitter
     @domain = domain
 
   addWorker: ->
-    phantomjs = spawn("bin/#{@currentPlatform}/phantomjs", ['--load-images=false', '--cookies-file=/dev/null', 'phantomjs/phantomWorker.coffee', "http://#{@domain}:#{@port}/phantom.html"]);
+    phantomjs = spawn("bin/#{@currentPlatform}/phantomjs", ['--load-images=false', '--cookies-file=/dev/null', 'phantomjs/phantomWorker.coffee', "http://#{@domain}:#{@port}/phantom.html"], {});
 
     phantomjs.id = @workers.length
 

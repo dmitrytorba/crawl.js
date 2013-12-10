@@ -31,4 +31,18 @@ class Brain extends events.EventEmitter
     resetVisitedDomains: ->
         @redisClient.del "visited-url"
 
+    addJob: (job) ->
+        @redisClient.lpush "jobs", JSON.stringify(job)
+
+    getJob: (callback) ->
+        @redisClient.rpop "jobs", (err, reply) ->
+            callback(JSON.parse(reply))
+
+    getJobCount: (callback) ->
+        @redisClient.llen "jobs", (err, reply) ->
+            callback(reply)
+
+    clearJobs: ->
+        @redisClient.del "jobs"
+
 module.exports = new Brain()

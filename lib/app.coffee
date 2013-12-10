@@ -178,9 +178,10 @@ sockets =
     io.of("/ui")
       .on "connection", (socket) ->
         util.log "<ui> connected"
-        sockets.ui.emit "jobs", queue.getJobCount()
         sockets.ui.emit "phantomCount", numberOfPhantoms
         sockets.ui.emit "jobsCompleted", jobsCompleted
+        queue.getJobCount (count) ->
+          sockets.ui.emit "jobs", count
         getStorages()
 
         socket.on "render", (url) ->
