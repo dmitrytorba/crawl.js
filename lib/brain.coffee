@@ -15,8 +15,9 @@ class Brain extends events.EventEmitter
         @redisClient.set "crawl-domain", domain
 
     getCrawlDomain: (callback)->
-        @redisClient.get "crawl-domain", (err, reply) ->
-            callback(reply)
+        if callback
+            @redisClient.get "crawl-domain", (err, reply) ->
+                callback(reply)
 
     ###
     the list of urls visted in this crawl
